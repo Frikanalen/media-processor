@@ -1,0 +1,34 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+//datasource db {
+//  provider = "postgresql"
+//  url      = env("DATABASE_URL")
+//}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model IngestJob {
+    id  Int @id @default(autoincrement())
+}
+
+model Asset {
+    id              Int     @id @default(autoincrement())
+    videoID         Int
+    assetType       String
+
+    video           Video   @relation(fields: [videoID], references: [id])
+}
+
+model Video {
+    id          Int     @id @default(autoincrement())
+    legacyID    Int
+    assets      Asset[]
+}
