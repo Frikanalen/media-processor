@@ -1,34 +1,44 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-//datasource db {
-//  provider = "postgresql"
-//  url      = env("DATABASE_URL")
-//}
+// Prisma docs: https://pris.ly/d/prisma-schema
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = "postgresql://apiv2:shak6xu1aivai2ohj1Aphaivie3sies3@database-api-v2.default.svc.cluster.local/apiv2"
 }
 
 generator client {
   provider = "prisma-client-js"
 }
 
+enum IngestJobState {
+    Pending
+    Running
+    Done
+    Failed
+}
+
 model IngestJob {
-    id  Int @id @default(autoincrement())
+    id              String  @id @default(uuid())
+    state           IngestJobState @default(Pending)
+    statusText      String @default("")
+    percentageDone  Int?
+    videoID         String
+    jobType         String
+    video           Video  @relation(fields: [videoID], references: [id])
 }
 
 model Asset {
-    id              Int     @id @default(autoincrement())
-    videoID         Int
+    id              String  @id @default(uuid())
+    videoID         String
     assetType       String
-
+    location        String
     video           Video   @relation(fields: [videoID], references: [id])
+    @@unique(fields: [assetType, videoID])
 }
 
 model Video {
-    id          Int     @id @default(autoincrement())
-    legacyID    Int
-    assets      Asset[]
+    id              String  @id @default(uuid())
+    legacyID        Int?    @unique
+    mediaMetadata   Json?
+    ingestJobs      IngestJob[]
+    assets          Asset[]
 }
