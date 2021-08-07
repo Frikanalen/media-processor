@@ -39,6 +39,7 @@ model Video {
     id              String  @id @default(uuid())
     legacyID        Int?    @unique
     mediaMetadata   Json?
+    ingested        Boolean @default(false)
     ingestJobs      IngestJob[]
     assets          Asset[]
 }

@@ -1,42 +1,22 @@
-import { newVideoMessage } from "./jsonTypes";
-import { Logger } from "tslog";
+import {newVideoMessage} from "./jsonTypes";
+import {FfprobeData} from "fluent-ffmpeg";
+var mime = require('mime-types')
 
-const log: Logger = new Logger();
-import { S3 } from "@aws-sdk/client-s3";
+import {PrismaClient} from "@prisma/client";
+import {getS3, putS3, deleteS3} from "./s3";
+import {Asset, IngestJob, Video} from "./models";
+
+import {Logger} from "tslog";
 import * as fs from "fs";
+const log: Logger = new Logger();
 
 const Path = require("path");
 const ffmpeg = require("fluent-ffmpeg");
-import { Readable } from "stream";
-import { FfprobeData } from "fluent-ffmpeg";
-
-import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient({});
 
-type ffmpegProgress = {
-  frames: number;
-  currentFps: number;
-  currentKbps: number;
-  targetSize: number;
-  timemark: string;
-  percent?: number;
-};
-
-process.env["AWS_SECRET_ACCESS_KEY"] =
-  "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY";
-process.env["AWS_ACCESS_KEY_ID"] = "AKIAIOSFODNN7EXAMPLE";
-
-const s3 = new S3({
-  forcePathStyle: true,
-  endpoint: "http://s3.fk.dev.local/",
-  region: "no-where-1",
-});
-
-export const createTheora = async(videoID: string): Promise<void> => {
-  log.info("Creating theora asset");
-
-  const { location } = await prisma.asset.findFirst({
+export const getOriginal = async (videoID: string, targetFile: string) => {
+  const {location} = await prisma.asset.findFirst({
     where: {
       assetType: "original",
       videoID: videoID,
@@ -47,16 +27,117 @@ export const createTheora = async(videoID: string): Promise<void> => {
     throw new Error("Original asset not available!")
   }
 
-  const [ bucket, key ] = location.split('/')
-  await getS3(bucket, key, 'theoraOriginal')
+  const [bucket, key] = location.split('/')
+
+  await getS3(bucket, key, targetFile)
+}
+
+type ffmpegProgress = {
+  frames: number;
+  currentFps: number;
+  currentKbps: number;
+  targetSize: number;
+  timemark: string;
+  percent?: number;
+};
+
+export const createThumbnail = async(videoID: string): Promise<void> => {
+  log.info("Creating thumbnail");
+  const video = new Video(videoID)
+  const ingestJob = await IngestJob.create(videoID, 'createThumbnail')
+
+  fs.mkdirSync(ingestJob.id)
+
+  const inputFilename = 'thumbOrig'
+  const outputFilename = 'thumbOut.jpg'
+
+
+
+  await getOriginal(videoID, inputFilename)
+
+  const finishUp = async() => {
+    await putS3("thumbnail", videoID, outputFilename, 'image/jpeg');
+    await Asset.create(videoID, 'thumbnail', `thumbnail/${videoID}`)
+    await ingestJob.setState('Done')
+  }
+
+  let thumbnailSeconds: number;
+
+  try {
+    const meta = await video.mediaMetadata
+    thumbnailSeconds = Math.round(meta.format.duration * 0.25)
+  } catch (e) {
+    log.warn("Could not find original data length, assuming 30 seconds", {e})
+    thumbnailSeconds = 30
+  }
+
+  return new Promise((resolve, reject) => {
+    ffmpeg()
+        .input(inputFilename)
+        .output(outputFilename)
+        .frames(1)
+        .seekInput(thumbnailSeconds)
+        .on("end", () => finishUp().then(resolve))
+        .on("progress", ({percent:p}: ffmpegProgress) => {p && ingestJob.setProgress(p).then()})
+        .on("error", (e: Error) => ingestJob.setState('Failed', e.message).then(reject))
+        .run();
+  });
+};
+
+export const createBroadcast = async(videoID: string): Promise<void> => {
+  log.info("Creating broadcast asset");
+  const ingestJob = await IngestJob.create(videoID, 'encodebroadcast')
+
+  await getOriginal(videoID, 'broadcastOriginal')
+
+  const finishUp = async() => {
+    await putS3("broadcast", videoID, 'broadcastOutput.mov', 'video/quicktime');
+    await Asset.create(videoID, 'broadcast', `broadcast/${videoID}`)
+    await ingestJob.setState('Done')
+  }
+
+  return new Promise((resolve, reject) => {
+    ffmpeg()
+        .input('broadcastOriginal')
+        .output('broadcastOutput.mov')
+        .videoCodec('libx264')
+        .outputOption('-crf 18')
+        .audioCodec('pcm_s16le')
+        .aspect("16:9")
+        .keepDAR()
+        .size("1280x720")
+        .autopad(true)
+        .on("end", () => finishUp().then(resolve))
+        .on("progress", ({percent:p}: ffmpegProgress) => {p && ingestJob.setProgress(p).then()})
+        .on("error", (e: Error) => {ingestJob.setState('Failed', e.message).then(()=>{throw e})})
+        .run();
+
+  });
+};
+
+export const createTheora = async(videoID: string): Promise<void> => {
+  log.info("Creating theora asset");
+  const ingestJob = await IngestJob.create(videoID, 'encodeTheora')
+
+  await getOriginal(videoID, 'theoraOriginal')
+
+  const finishUp = async() => {
+    await putS3("theora", videoID, 'theoraOutput.ogv', 'video/ogg');
+    await Asset.create(videoID, 'theora', `theora/${videoID}`)
+    await ingestJob.setState('Done')
+  }
 
   return new Promise((resolve, reject) => {
     ffmpeg()
       .input('theoraOriginal')
       .output('theoraOutput.ogv')
-      .on("end", resolve)
-      .on("progress", (x: ffmpegProgress) => log.info(x))
-      .on("error", reject)
+      .outputOptions(['-qscale:v 7', '-qscale:a 2'])
+      .aspect("16:9")
+      .size("720x?")
+      .autopad(true)
+      .on("end", () => finishUp().then(resolve))
+      .on("progress", ({percent:p}: ffmpegProgress) => {p && ingestJob.setProgress(p).then()})
+      .on("error", (e: Error) => ingestJob.setState('Failed', e.message).then(reject))
       .run();
   });
 };
@@ -73,49 +154,11 @@ export const probeOriginal = async (inFile: string): Promise<object> => {
   });
 };
 
-const getS3 = async (
-  bucket: string,
-  key: string,
-  targetFile: string
-): Promise<void> => {
-  const s3object = await s3.getObject({ Bucket: bucket, Key: key });
-  const localFile = fs.createWriteStream(targetFile);
-
-  if (!(s3object.Body instanceof Readable))
-    throw new Error(`expected body type Readable, got ${typeof s3object.Body}`);
-
-  s3object.Body.pipe(localFile);
-};
-
-const putS3 = async (
-  bucket: string,
-  key: string,
-  sourceFile: string
-): Promise<void> => {
-  await s3.putObject({
-    Body: fs.createReadStream(sourceFile),
-    Bucket: bucket,
-    Key: key,
-  });
-};
-
-const deleteS3 = async (bucket: string, key: string): Promise<void> => {
-  await s3.deleteObject({
-    Bucket: bucket,
-    Key: key,
-  });
-};
-
 const extractMetadata = async (
   videoID: string,
   origFile: string
 ): Promise<void> => {
-  const { id: jobID } = await prisma.ingestJob.create({
-    data: {
-      jobType: "probeMetadata",
-      videoID: videoID,
-    },
-  });
+  const ingestJob = await IngestJob.create(videoID, 'probeMetadata')
 
   try {
     const probeResults = await probeOriginal(origFile);
@@ -132,19 +175,11 @@ const extractMetadata = async (
       },
     });
 
-    await prisma.ingestJob.update({
-      where: { id: jobID },
-      data: { state: "Done" },
-    });
-    log.debug("success", { jobID });
+    await ingestJob.setState('Done')
+    log.debug("success", { id: ingestJob.id });
   } catch (error) {
-    log.error("failure", { jobID });
-
-    await prisma.ingestJob.update({
-      where: { id: jobID },
-      data: { state: "Failed", statusText: error.message },
-    });
-
+    await ingestJob.setState('Failed', error.message)
+    log.error("failure", { id: ingestJob.id });
     throw error;
   }
 };
@@ -175,16 +210,13 @@ export const Ingest = async (message: newVideoMessage) => {
 
   log.info(`valid file, storing as original`);
 
-  await putS3("original", s3_key, originalFile);
-  await prisma.asset.create({
-    data: {
-      videoID,
-      assetType: "original",
-      location: `original/${s3_key}`,
-    },
-  });
+  await putS3("original", videoID, originalFile, mime.lookup(originalFile));
+  await Asset.create(videoID, 'original', `original/${videoID}`)
+
   await createTheora(videoID);
-  // await deleteS3('incoming', s3_key)
+  await createThumbnail(videoID);
+  await createBroadcast(videoID);
+  await deleteS3('incoming', s3_key)
   //await ingestOriginal(originalFile)
   //fs.writeFileSync('foo.mp4', foo.Body.read())
 };
@@ -193,5 +225,5 @@ Ingest({
   version: 1,
   video_id: 2,
   orig_filename: "lol.mp4",
-  s3_key: "874b3813ed36d242c55df7728d2bc644",
+  s3_key: "Saturday.Night.Live.S44E11.James.McAvoy.Meek.Mill.1080p.HULU.WEB-DL.AAC2.0.H.264-monkee.mp4",
 });
