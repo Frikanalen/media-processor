@@ -1,28 +1,14 @@
 import { PrismaClient } from "@prisma/client";
 import { Logger } from "tslog";
-
+import { runEveryMessage } from "./eventReceiver";
 import { IngestNewVideo } from "./ingest";
-import { newVideoMessageSchema, runEveryMessage } from "./eventReceiver";
 
 const log: Logger = new Logger();
 const prisma = new PrismaClient();
 
-runEveryMessage(async (message) => {
-  if (!message.value) {
-    log.warn("no message value", { message });
-    return;
-  }
+log.info("Media processor running.");
 
-  try {
-    const newVideo = newVideoMessageSchema.parse(
-      JSON.parse(message.value.toString())
-    );
-    log.info("received new video", newVideo);
-    await IngestNewVideo(newVideo);
-  } catch (e) {
-    log.warn(e);
-  }
-})
+runEveryMessage(IngestNewVideo)
   .catch((e) => {
     throw e;
   })

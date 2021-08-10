@@ -213,9 +213,10 @@ const extractMetadata = async (
 export const IngestNewVideo = async (message: newVideoMessage) => {
   const { s3_key, video_id: videoID, orig_filename } = message;
 
-  log.info("commencing ingest", { videoID });
+  log.info("commencing ingest", { message });
 
   const originalFile = `original${Path.extname(orig_filename)}`;
+
   log.info(`downloading uploaded file to ${originalFile}`);
 
   await getS3("incoming", s3_key, originalFile);
@@ -243,7 +244,7 @@ export const IngestNewVideo = async (message: newVideoMessage) => {
 
 IngestNewVideo({
   version: 1,
-  video_id: 2,
+  video_id: 626868,
   orig_filename: "lol.mp4",
-  s3_key: "4e3e14794d471dd6e72f512be2df0ac7",
+  s3_key: "42b7e276bf8c83b7ce27c40f4ef4e5f0",
 });

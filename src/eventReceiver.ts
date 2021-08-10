@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { Kafka, KafkaMessage } from "kafkajs";
+import { Kafka } from "kafkajs";
 import { hostname } from "os";
-import { Ingest } from "./ingest";
 import { Logger } from "tslog";
+
 const log: Logger = new Logger();
 
 export const newVideoMessageSchema = z.object({
@@ -14,30 +14,42 @@ export const newVideoMessageSchema = z.object({
 
 export type newVideoMessage = z.infer<typeof newVideoMessageSchema>;
 
-const kafka = new Kafka({
-  clientId: hostname(),
-  brokers: ["192.168.40.2:9092"],
-});
-
-const consumer = kafka.consumer({ groupId: "media-processor" });
-
-type eachMessageHandler = {
-  topic: string;
-  partition: number;
-  message: KafkaMessage;
-};
-
 export const runEveryMessage = async (
-  callback: (message: KafkaMessage) => Promise<void>
+  callback: (message: newVideoMessage) => Promise<void>
 ) => {
+  const kafka = new Kafka({
+    clientId: hostname(),
+    brokers: ["kafka-service.kafka.svc.cluster.local:9092"],
+  });
+
+  const consumer = kafka.consumer({ groupId: "media-processor" });
+
+  log.info("Connecting to kafka...");
   await consumer.connect();
+  log.info("Connected. Subscribing...");
   await consumer.subscribe({
     topic: "new-video-uploaded",
     fromBeginning: true,
   });
-
+  log.info("Subscribed. Waiting for events...");
   await consumer.run({
     autoCommit: false,
-    eachMessage: (payload) => callback(payload.message),
+    eachMessage: async ({ message }) => {
+      log.info("Message received.");
+      if (!message.value) {
+        log.warn("no message value", { message });
+        return;
+      }
+
+      try {
+        const newVideo = newVideoMessageSchema.parse(
+          JSON.parse(message.value.toString())
+        );
+        log.info("received new video", newVideo);
+        return callback(newVideo);
+      } catch (e) {
+        log.warn(e);
+      }
+    },
   });
 };
