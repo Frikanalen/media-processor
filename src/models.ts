@@ -1,4 +1,4 @@
-import {IngestJobState, PrismaClient} from "@prisma/client";
+import {PrismaClient} from "@prisma/client";
 import {Logger} from "tslog";
 const log: Logger = new Logger();
 const prisma = new PrismaClient({
@@ -6,32 +6,34 @@ const prisma = new PrismaClient({
 });
 
 export class IngestJob {
-    public readonly id: string;
+    public readonly id: number;
 
-    constructor(jobID: string) {
+    constructor(jobID: number) {
         this.id = jobID
     }
 
-    static async create(videoID: string, jobType: string): Promise<IngestJob> {
-        const {id: jobID} = await prisma.ingestJob.create({
-            data: {jobType, videoID},
+    static async create(videoID: number, jobType: string): Promise<IngestJob> {
+        const {id: jobID} = await prisma.fk_ingestjob.create({
+            data: {job_type: jobType, video_id: videoID},
         });
 
         return new IngestJob(jobID)
     }
 
-    async setState(state: IngestJobState, statusMessage?: string) {
-        await prisma.ingestJob.update({
+    async setState(state: string, statusMessage?: string) {
+        await prisma.fk_ingestjob.update({
             where: {id: this.id},
-            data: {state: state, statusText: statusMessage},
+            data: {state: state, status_text: statusMessage},
         });
     }
 
     async setProgress(percentageDone: number) {
         percentageDone = Math.ceil(percentageDone)
-        await prisma.ingestJob.update({
+        await prisma.fk_ingestjob.update({
             where: {id: this.id},
-            data: {percentageDone},
+            data: {
+                percentage_done: percentageDone
+            },
         });
     }
 }
@@ -145,11 +147,12 @@ export interface mediaMetadataRecord {
 }
 
 export class Video {
-    public readonly id: string;
+    public readonly id: number;
+
     public get mediaMetadata(): Promise<mediaMetadata> {
         return (async () =>
         {
-            const {mediaMetadata} = await prisma.video.findUnique({where: {id: this.id}});
+            const {media_metadata: mediaMetadata} = await prisma.fk_video.findUnique({where: {id: this.id}});
             if(typeof mediaMetadata !== 'object') throw new Error ("Invalid metadata!")
             if(!mediaMetadata) throw new Error ("No metadata stored!")
             const meta = mediaMetadata as unknown as mediaMetadataRecord
@@ -157,25 +160,25 @@ export class Video {
         })()
     }
 
-    constructor(videoID: string) {
+    constructor(videoID: number) {
         this.id = videoID
     }
 }
 
 export class Asset {
-    public readonly id: string;
+    public readonly id: number;
 
     public get location() {
         return (async () =>
         {
-            const {location} = await prisma.asset.findUnique({where: {id: this.id}});
+            const {location} = await prisma.fk_asset.findUnique({where: {id: this.id}});
             return location
         })()
     }
 
-    static async create(videoID: string, assetType: string, location: string): Promise<Asset> {
-        const { id } = await prisma.asset.create({
-            data: {assetType, videoID, location},
+    static async create(videoID: number, assetType: string, location: string): Promise<Asset> {
+        const { id } = await prisma.fk_asset.create({
+            data: {asset_type: assetType, video_id: videoID, location},
         });
 
         log.debug(id)
@@ -183,7 +186,7 @@ export class Asset {
         return new Asset(id)
     }
 
-    constructor(assetID: string) {
+    constructor(assetID: number) {
         this.id = assetID
     }
 }

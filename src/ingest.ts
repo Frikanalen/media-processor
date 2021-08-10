@@ -1,6 +1,6 @@
 import {newVideoMessage} from "./jsonTypes";
 import {FfprobeData} from "fluent-ffmpeg";
-var mime = require('mime-types')
+const mime = require('mime-types')
 
 import {PrismaClient} from "@prisma/client";
 import {getS3, putS3, deleteS3} from "./s3";
@@ -15,11 +15,11 @@ const ffmpeg = require("fluent-ffmpeg");
 
 const prisma = new PrismaClient({});
 
-export const getOriginal = async (videoID: string, targetFile: string) => {
-  const {location} = await prisma.asset.findFirst({
+export const getOriginal = async (videoID: number, targetFile: string) => {
+  const {location} = await prisma.fk_asset.findFirst({
     where: {
-      assetType: "original",
-      videoID: videoID,
+      asset_type: "original",
+      video_id: videoID,
     },
   }) || {location: undefined};
 
@@ -41,22 +41,20 @@ type ffmpegProgress = {
   percent?: number;
 };
 
-export const createThumbnail = async(videoID: string): Promise<void> => {
+export const createThumbnail = async(videoID: number): Promise<void> => {
   log.info("Creating thumbnail");
   const video = new Video(videoID)
   const ingestJob = await IngestJob.create(videoID, 'createThumbnail')
 
-  fs.mkdirSync(ingestJob.id)
+  fs.mkdirSync(ingestJob.id.toString())
 
-  const inputFilename = 'thumbOrig'
-  const outputFilename = 'thumbOut.jpg'
-
-
+  const inputFilename = `${ingestJob.id}/thumbOrig`
+  const outputFilename = `${ingestJob.id}/thumbOut.jpg`
 
   await getOriginal(videoID, inputFilename)
 
   const finishUp = async() => {
-    await putS3("thumbnail", videoID, outputFilename, 'image/jpeg');
+    await putS3("thumbnail", videoID.toString(), outputFilename, 'image/jpeg');
     await Asset.create(videoID, 'thumbnail', `thumbnail/${videoID}`)
     await ingestJob.setState('Done')
   }
@@ -84,22 +82,27 @@ export const createThumbnail = async(videoID: string): Promise<void> => {
   });
 };
 
-export const createBroadcast = async(videoID: string): Promise<void> => {
+export const createBroadcast = async(videoID: number): Promise<void> => {
   log.info("Creating broadcast asset");
   const ingestJob = await IngestJob.create(videoID, 'encodebroadcast')
 
-  await getOriginal(videoID, 'broadcastOriginal')
+  fs.mkdirSync(ingestJob.id.toString())
+
+  const inputFilename = `${ingestJob.id}/broadcastOriginal`
+  const outputFilename = `${ingestJob.id}/broadcastOutput.mov`
+
+  await getOriginal(videoID, inputFilename)
 
   const finishUp = async() => {
-    await putS3("broadcast", videoID, 'broadcastOutput.mov', 'video/quicktime');
+    await putS3("broadcast", videoID.toString(), outputFilename, 'video/quicktime');
     await Asset.create(videoID, 'broadcast', `broadcast/${videoID}`)
     await ingestJob.setState('Done')
   }
 
   return new Promise((resolve, reject) => {
     ffmpeg()
-        .input('broadcastOriginal')
-        .output('broadcastOutput.mov')
+        .input(inputFilename)
+        .output(outputFilename)
         .videoCodec('libx264')
         .outputOption('-crf 18')
         .audioCodec('pcm_s16le')
@@ -109,28 +112,33 @@ export const createBroadcast = async(videoID: string): Promise<void> => {
         .autopad(true)
         .on("end", () => finishUp().then(resolve))
         .on("progress", ({percent:p}: ffmpegProgress) => {p && ingestJob.setProgress(p).then()})
-        .on("error", (e: Error) => {ingestJob.setState('Failed', e.message).then(()=>{throw e})})
+        .on("error", (e: Error) => {ingestJob.setState('Failed', e.message).then(()=>{reject(e)})})
         .run();
 
   });
 };
 
-export const createTheora = async(videoID: string): Promise<void> => {
+export const createTheora = async(videoID: number): Promise<void> => {
   log.info("Creating theora asset");
   const ingestJob = await IngestJob.create(videoID, 'encodeTheora')
 
-  await getOriginal(videoID, 'theoraOriginal')
+  fs.mkdirSync(ingestJob.id.toString())
+
+  const inputFilename = `${ingestJob.id}/theoraOriginal`
+  const outputFilename = `${ingestJob.id}/broadcastOutput.mov`
+
+  await getOriginal(videoID, inputFilename)
 
   const finishUp = async() => {
-    await putS3("theora", videoID, 'theoraOutput.ogv', 'video/ogg');
+    await putS3("theora", videoID.toString(), outputFilename, 'video/ogg');
     await Asset.create(videoID, 'theora', `theora/${videoID}`)
     await ingestJob.setState('Done')
   }
 
   return new Promise((resolve, reject) => {
     ffmpeg()
-      .input('theoraOriginal')
-      .output('theoraOutput.ogv')
+      .input(inputFilename)
+      .output(outputFilename)
       .outputOptions(['-qscale:v 7', '-qscale:a 2'])
       .aspect("16:9")
       .size("720x?")
@@ -155,7 +163,7 @@ export const probeOriginal = async (inFile: string): Promise<object> => {
 };
 
 const extractMetadata = async (
-  videoID: string,
+  videoID: number,
   origFile: string
 ): Promise<void> => {
   const ingestJob = await IngestJob.create(videoID, 'probeMetadata')
@@ -163,12 +171,12 @@ const extractMetadata = async (
   try {
     const probeResults = await probeOriginal(origFile);
 
-    await prisma.video.update({
+    await prisma.fk_video.update({
       where: {
         id: videoID,
       },
       data: {
-        mediaMetadata: {
+        media_metadata: {
           version: 1,
           data: probeResults,
         },
@@ -185,19 +193,9 @@ const extractMetadata = async (
 };
 
 export const Ingest = async (message: newVideoMessage) => {
-  const { s3_key, video_id, orig_filename } = message;
+  const { s3_key, video_id: videoID, orig_filename } = message;
 
-  await prisma.asset.deleteMany();
-  await prisma.ingestJob.deleteMany();
-  await prisma.video.deleteMany();
-
-  log.info("commencing ingest", { video_id });
-
-  const { id: videoID } = await prisma.video.create({
-    data: {
-      legacyID: video_id,
-    },
-  });
+  log.info("commencing ingest", { videoID });
 
   const originalFile = `original${Path.extname(orig_filename)}`;
   log.info(`downloading uploaded file to ${originalFile}`);
@@ -210,7 +208,7 @@ export const Ingest = async (message: newVideoMessage) => {
 
   log.info(`valid file, storing as original`);
 
-  await putS3("original", videoID, originalFile, mime.lookup(originalFile));
+  await putS3("original", videoID.toString(), originalFile, mime.lookup(originalFile));
   await Asset.create(videoID, 'original', `original/${videoID}`)
 
   await createTheora(videoID);
@@ -225,5 +223,5 @@ Ingest({
   version: 1,
   video_id: 2,
   orig_filename: "lol.mp4",
-  s3_key: "Saturday.Night.Live.S44E11.James.McAvoy.Meek.Mill.1080p.HULU.WEB-DL.AAC2.0.H.264-monkee.mp4",
+  s3_key: "4e3e14794d471dd6e72f512be2df0ac7",
 });

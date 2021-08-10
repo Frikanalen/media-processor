@@ -1,45 +1,315 @@
-// Prisma docs: https://pris.ly/d/prisma-schema
-
-datasource db {
-  provider = "postgresql"
-  url      = "postgresql://apiv2:shak6xu1aivai2ohj1Aphaivie3sies3@database-api-v2.default.svc.cluster.local/apiv2"
-}
-
 generator client {
   provider = "prisma-client-js"
 }
 
-enum IngestJobState {
-    Pending
-    Running
-    Done
-    Failed
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
-model IngestJob {
-    id              String  @id @default(uuid())
-    state           IngestJobState @default(Pending)
-    statusText      String @default("")
-    percentageDone  Int?
-    videoID         String
-    jobType         String
-    video           Video  @relation(fields: [videoID], references: [id])
+model auth_group {
+  id                     Int                      @id @default(autoincrement())
+  name                   String                   @unique @db.VarChar(150)
+  auth_group_permissions auth_group_permissions[]
+
+  @@index([name], name: "auth_group_name_a6ea08ec_like")
 }
 
-model Asset {
-    id              String  @id @default(uuid())
-    videoID         String
-    assetType       String
-    location        String
-    video           Video   @relation(fields: [videoID], references: [id])
-    @@unique(fields: [assetType, videoID])
+model auth_group_permissions {
+  id              Int             @id @default(autoincrement())
+  group_id        Int
+  permission_id   Int
+  auth_group      auth_group      @relation(fields: [group_id], references: [id])
+  auth_permission auth_permission @relation(fields: [permission_id], references: [id])
+
+  @@unique([group_id, permission_id], name: "auth_group_permissions_group_id_permission_id_0cd325b0_uniq")
+  @@index([group_id], name: "auth_group_permissions_group_id_b120cbf9")
+  @@index([permission_id], name: "auth_group_permissions_permission_id_84c5c92e")
 }
 
-model Video {
-    id              String  @id @default(uuid())
-    legacyID        Int?    @unique
-    mediaMetadata   Json?
-    ingested        Boolean @default(false)
-    ingestJobs      IngestJob[]
-    assets          Asset[]
+model auth_permission {
+  id                     Int                      @id @default(autoincrement())
+  name                   String                   @db.VarChar(255)
+  content_type_id        Int
+  codename               String                   @db.VarChar(100)
+  django_content_type    django_content_type      @relation(fields: [content_type_id], references: [id])
+  auth_group_permissions auth_group_permissions[]
+
+  @@unique([content_type_id, codename], name: "auth_permission_content_type_id_codename_01ab375a_uniq")
+  @@index([content_type_id], name: "auth_permission_content_type_id_2f476e4b")
+}
+
+model authtoken_token {
+  key     String   @id @db.VarChar(40)
+  created DateTime @db.Timestamptz(6)
+  user_id Int      @unique
+  fk_user fk_user  @relation(fields: [user_id], references: [id])
+
+  @@index([key], name: "authtoken_token_key_10f0b77e_like")
+}
+
+model django_admin_log {
+  id                  Int                  @id @default(autoincrement())
+  action_time         DateTime             @db.Timestamptz(6)
+  object_id           String?
+  object_repr         String               @db.VarChar(200)
+  action_flag         Int                  @db.SmallInt
+  change_message      String
+  content_type_id     Int?
+  user_id             Int
+  django_content_type django_content_type? @relation(fields: [content_type_id], references: [id])
+  fk_user             fk_user              @relation(fields: [user_id], references: [id])
+
+  @@index([content_type_id], name: "django_admin_log_content_type_id_c4bce8eb")
+  @@index([user_id], name: "django_admin_log_user_id_c564eba6")
+}
+
+model django_content_type {
+  id               Int                @id @default(autoincrement())
+  app_label        String             @db.VarChar(100)
+  model            String             @db.VarChar(100)
+  auth_permission  auth_permission[]
+  django_admin_log django_admin_log[]
+
+  @@unique([app_label, model], name: "django_content_type_app_label_model_76bd3d3b_uniq")
+}
+
+model django_migrations {
+  id      Int      @id @default(autoincrement())
+  app     String   @db.VarChar(255)
+  name    String   @db.VarChar(255)
+  applied DateTime @db.Timestamptz(6)
+}
+
+model django_session {
+  session_key  String   @id @db.VarChar(40)
+  session_data String
+  expire_date  DateTime @db.Timestamptz(6)
+
+  @@index([expire_date], name: "django_session_expire_date_a5c62663")
+  @@index([session_key], name: "django_session_session_key_c0390e0f_like")
+}
+
+model fk_asrun {
+  id           Int       @id @default(autoincrement())
+  created      DateTime  @db.Timestamptz(6)
+  modified     DateTime  @db.Timestamptz(6)
+  program_name String    @db.VarChar(160)
+  playout      String    @db.VarChar(255)
+  played_at    DateTime  @db.Timestamptz(6)
+  in_ms        Int
+  out_ms       Int?
+  video_id     Int?
+  fk_video     fk_video? @relation(fields: [video_id], references: [id])
+
+  @@index([video_id], name: "fk_asrun_video_id_ac707754")
+}
+
+model fk_asset {
+  id         Int      @id @default(autoincrement())
+  asset_type String   @db.VarChar(160)
+  location   String   @db.VarChar(160)
+  video_id   Int
+  fk_video   fk_video @relation(fields: [video_id], references: [id])
+
+  @@index([video_id], name: "fk_asset_video_id_1fd3ad93")
+}
+
+model fk_category {
+  id                  Int                   @id
+  name                String                @db.VarChar(255)
+  desc                String                @db.VarChar(255)
+  fk_video_categories fk_video_categories[]
+}
+
+model fk_fileformat {
+  id           Int            @id @default(autoincrement())
+  description  String?        @unique
+  fsname       String         @db.VarChar(20)
+  vod_publish  Boolean
+  mime_type    String?        @db.VarChar(256)
+  fk_videofile fk_videofile[]
+
+  @@index([description], name: "ItemType_description_e662b26d_like")
+}
+
+model fk_organization {
+  id                      Int                       @id @default(autoincrement())
+  name                    String                    @db.VarChar(255)
+  description             String
+  fkmember                Boolean
+  orgnr                   String                    @db.VarChar(255)
+  homepage                String?                   @db.VarChar(255)
+  editor_id               Int?
+  street_address          String?
+  postal_address          String?
+  fk_user                 fk_user?                  @relation(fields: [editor_id], references: [id])
+  fk_organization_members fk_organization_members[]
+  fk_schedulepurpose      fk_schedulepurpose[]
+  fk_video                fk_video[]
+
+  @@index([editor_id], name: "fk_organization_editor_id_f1a49ee4")
+}
+
+model fk_organization_members {
+  id              Int             @id @default(autoincrement())
+  organization_id Int
+  user_id         Int
+  fk_organization fk_organization @relation(fields: [organization_id], references: [id])
+  fk_user         fk_user         @relation(fields: [user_id], references: [id])
+
+  @@unique([organization_id, user_id], name: "Organization_members_organization_id_user_id_9e945cd2_uniq")
+  @@index([organization_id], name: "Organization_members_organization_id_a5ab04cc")
+  @@index([user_id], name: "Organization_members_user_id_2bf6877a")
+}
+
+model fk_scheduleitem {
+  id             Int                     @id @default(autoincrement())
+  default_name   String                  @db.VarChar(255)
+  schedulereason Int
+  starttime      DateTime                @db.Timestamptz(6)
+  duration       Unsupported("interval")
+  video_id       Int?
+  fk_video       fk_video?               @relation(fields: [video_id], references: [id])
+
+  @@index([video_id], name: "ScheduleItem_video_id_c8d840a2")
+}
+
+model fk_schedulepurpose {
+  id                               Int                                @id @default(autoincrement())
+  name                             String                             @db.VarChar(100)
+  type                             String                             @db.VarChar(32)
+  strategy                         String                             @db.VarChar(32)
+  organization_id                  Int?
+  fk_organization                  fk_organization?                   @relation(fields: [organization_id], references: [id])
+  fk_schedulepurpose_direct_videos fk_schedulepurpose_direct_videos[]
+  fk_weeklyslot                    fk_weeklyslot[]
+
+  @@index([organization_id], name: "fk_schedulepurpose_organization_id_255b1d93")
+}
+
+model fk_schedulepurpose_direct_videos {
+  id                 Int                @id @default(autoincrement())
+  schedulepurpose_id Int
+  video_id           Int
+  fk_schedulepurpose fk_schedulepurpose @relation(fields: [schedulepurpose_id], references: [id])
+  fk_video           fk_video           @relation(fields: [video_id], references: [id])
+
+  @@unique([schedulepurpose_id, video_id], name: "fk_schedulepurpose_direc_schedulepurpose_id_video_f45cb3b8_uniq")
+  @@index([schedulepurpose_id], name: "fk_schedulepurpose_direct_videos_schedulepurpose_id_046bfedc")
+  @@index([video_id], name: "fk_schedulepurpose_direct_videos_video_id_0abcea88")
+}
+
+model fk_user {
+  id                      Int                       @id @default(autoincrement())
+  password                String                    @db.VarChar(128)
+  last_login              DateTime?                 @db.Timestamptz(6)
+  is_superuser            Boolean
+  first_name              String                    @db.VarChar(30)
+  last_name               String                    @db.VarChar(30)
+  email                   String                    @unique @db.VarChar(254)
+  is_active               Boolean
+  date_joined             DateTime                  @db.Timestamptz(6)
+  date_of_birth           DateTime?                 @db.Date
+  identity_confirmed      Boolean
+  phone_number            String                    @db.VarChar(128)
+  authtoken_token         authtoken_token?
+  django_admin_log        django_admin_log[]
+  fk_organization         fk_organization[]
+  fk_organization_members fk_organization_members[]
+  fk_video                fk_video[]
+
+  @@index([email], name: "fk_user_email_f6314fb6_like")
+}
+
+model fk_video {
+  id                               Int                                @id @default(autoincrement())
+  header                           String?
+  name                             String                             @db.VarChar(255)
+  description                      String?                            @db.VarChar(2048)
+  has_tono_records                 Boolean
+  is_filler                        Boolean
+  publish_on_web                   Boolean
+  proper_import                    Boolean
+  played_count_web                 Int
+  created_time                     DateTime?                          @db.Timestamptz(6)
+  updated_time                     DateTime?                          @db.Timestamptz(6)
+  uploaded_time                    DateTime?                          @db.Timestamptz(6)
+  framerate                        Int
+  ref_url                          String                             @db.VarChar(1024)
+  duration                         Unsupported("interval")
+  upload_token                     String                             @db.VarChar(32)
+  creator_id                       Int
+  organization_id                  Int?
+  media_metadata                   Json
+  fk_user                          fk_user                            @relation(fields: [creator_id], references: [id])
+  fk_organization                  fk_organization?                   @relation(fields: [organization_id], references: [id])
+  fk_asrun                         fk_asrun[]
+  fk_asset                         fk_asset[]
+  fk_ingestjob                     fk_ingestjob[]
+  fk_scheduleitem                  fk_scheduleitem[]
+  fk_schedulepurpose_direct_videos fk_schedulepurpose_direct_videos[]
+  fk_video_categories              fk_video_categories[]
+  fk_videofile                     fk_videofile[]
+
+  @@index([creator_id], name: "Video_editor_id_5c4b3e8e")
+  @@index([organization_id], name: "Video_organization_id_3102b841")
+}
+
+model fk_video_categories {
+  id          Int         @id @default(autoincrement())
+  video_id    Int
+  category_id Int
+  fk_category fk_category @relation(fields: [category_id], references: [id])
+  fk_video    fk_video    @relation(fields: [video_id], references: [id])
+
+  @@unique([video_id, category_id], name: "Video_categories_video_id_category_id_b4832ad4_uniq")
+  @@index([category_id], name: "Video_categories_category_id_c71a3290")
+  @@index([video_id], name: "Video_categories_video_id_bbaa86ca")
+}
+
+model fk_videofile {
+  id              Int           @id @default(autoincrement())
+  filename        String        @db.VarChar(256)
+  integrated_lufs Float?
+  truepeak_lufs   Float?
+  created_time    DateTime?     @db.Timestamptz(6)
+  format_id       Int
+  video_id        Int
+  fk_fileformat   fk_fileformat @relation(fields: [format_id], references: [id])
+  fk_video        fk_video      @relation(fields: [video_id], references: [id])
+
+  @@index([format_id], name: "fk_videofile_format_id_c2180d79")
+  @@index([video_id], name: "fk_videofile_video_id_0f3e413f")
+}
+
+model fk_weeklyslot {
+  id                 Int                     @id @default(autoincrement())
+  day                Int
+  start_time         DateTime                @db.Time(6)
+  duration           Unsupported("interval")
+  purpose_id         Int?
+  fk_schedulepurpose fk_schedulepurpose?     @relation(fields: [purpose_id], references: [id])
+
+  @@index([purpose_id], name: "fk_weeklyslot_purpose_id_581fc044")
+}
+
+model news_bulletin {
+  id           Int      @id @default(autoincrement())
+  heading      String   @db.VarChar(80)
+  text         String
+  created      DateTime @db.Timestamptz(6)
+  is_published Boolean
+}
+
+model fk_ingestjob {
+  id              Int      @id @default(autoincrement())
+  job_type        String   @db.VarChar(160)
+  percentage_done Int      @default(0)
+  status_text     String   @default("")
+  state           String   @db.VarChar(160) @default("")
+  video_id        Int
+  fk_video        fk_video @relation(fields: [video_id], references: [id])
+
+  @@index([video_id], name: "fk_ingestjob_video_id_f5c81bf1")
 }
