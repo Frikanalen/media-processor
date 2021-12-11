@@ -1,5 +1,4 @@
-import { PrismaClient } from "@prisma/client";
-import { Logger } from "tslog";
+]import { Logger } from "tslog";
 const log: Logger = new Logger();
 const prisma = new PrismaClient({
   rejectOnNotFound: true,

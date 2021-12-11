@@ -168,17 +168,7 @@ export const createTheora = async (videoID: number): Promise<void> => {
   });
 };
 
-export const probeOriginal = async (inFile: string): Promise<object> => {
-  return new Promise((resolve, reject) => {
-    ffmpeg.ffprobe(
-      inFile,
-      function (err: object | null, metadata: FfprobeData) {
-        if (err) reject(err);
-        resolve(metadata);
-      }
-    );
-  });
-};
+
 
 const extractMetadata = async (
   videoID: number,

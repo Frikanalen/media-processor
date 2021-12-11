@@ -7,9 +7,8 @@ const log: Logger = new Logger();
 
 export const newVideoMessageSchema = z.object({
   version: z.literal(1),
-  video_id: z.number(),
-  orig_filename: z.string(),
-  s3_key: z.string(),
+  fileName: z.string(),
+  objectKey: z.string(),
 });
 
 export type newVideoMessage = z.infer<typeof newVideoMessageSchema>;
@@ -19,7 +18,7 @@ export const runEveryMessage = async (
 ) => {
   const kafka = new Kafka({
     clientId: hostname(),
-    brokers: ["kafka-service.kafka.svc.cluster.local:9092"],
+    brokers: ["localhost:9092"],
   });
 
   const consumer = kafka.consumer({ groupId: "media-processor" });
