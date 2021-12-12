@@ -15,7 +15,7 @@ import { InferType, number, object, string } from "yup";
  *        - fileName
  *        - objectKey
  */
-export const videoMediaSchema = object({
+export const ingestSchema = object({
   fileName: string().required(),
   objectKey: string().required(),
 });
