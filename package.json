@@ -10,15 +10,19 @@
     "test:watch": "jest --coverage --watchAll",
     "build": "tsc",
     "build:watch": "onchange 'src/*.ts' 'src/**/*.ts' -- yarn run build",
-    "start": "tsc && node src/ingest.js"
+    "start": "tsc && node src/ingest.js",
+    "dev": "ts-node-dev src/index.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.24.0",
+    "@koa/router": "^10.1.1",
     "@types/fluent-ffmpeg": "^2.1.17",
     "ffmpeg": "^0.0.4",
     "fluent-ffmpeg": "^2.1.2",
     "jest": "^27.0.6",
     "kafkajs": "^1.15.0",
+    "koa": "^2.13.4",
+    "koa-bodyparser": "^4.3.0",
     "mime-types": "^2.1.32",
     "serve": "^12.0.0",
     "small-uuid": "^1.0.1",
@@ -28,9 +32,13 @@
     "yup": "^0.32.11"
   },
   "devDependencies": {
+    "@types/koa": "^2.13.4",
+    "@types/koa-bodyparser": "^4.3.4",
+    "@types/koa__router": "^8.0.11",
     "@types/node": "^16.0.1",
     "onchange": "^7.1.0",
-    "prettier": "^2.3.2"
+    "prettier": "^2.3.2",
+    "ts-node-dev": "^1.1.8"
   },
   "repository": "git@github.com:Frikanalen/media-processor.git",
   "author": "Tore Sinding Bekkedal <toresbe@protonmail.com>"
