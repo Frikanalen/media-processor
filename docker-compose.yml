@@ -5,6 +5,13 @@ services:
     ports:
       - "6379:6379"
 
+  redis-gui:
+    image: rediscommander/redis-commander
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    ports:
+      - "8083:8081"
+
   s3-backend:
     image: scireum/s3-ninja
     network_mode: host

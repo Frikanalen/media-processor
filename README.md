@@ -8,5 +8,8 @@ It will replace fkupload and fkprocess.
 
 ```bash
 cp dev-env .env
+# This will expose a redis frontend at http://localhost:8083
+docker-compose up -d
 yarn run dev
+
 ```
