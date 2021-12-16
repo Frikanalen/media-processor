@@ -6,10 +6,10 @@ export const getStorageWriteStream = (
   locator: Locator,
   contentType: string
 ) => {
-  const [provider, rest] = locator.split(":") as [Provider, string]
+  const [provider] = locator.split(":") as [Provider, string]
 
   if (provider === "S3") {
-    const [bucket, key] = rest.split(":")
+    const [, bucket, key] = locator.split(":")
 
     const stream = new PassThrough()
 

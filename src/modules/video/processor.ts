@@ -18,7 +18,7 @@ export default async function process(job: VideoJob) {
   for (const d of getVideoThumbnailDescriptor()) {
     const { name, transcode, mime, width, height } = d
 
-    const locator = getLocator("S3", key, name)
+    const locator = getLocator("S3", "images", key, name)
     const writeStream = getStorageWriteStream(locator, mime)
     const readStream = createReadStream(pathToThumbnail)
 
@@ -50,7 +50,7 @@ export default async function process(job: VideoJob) {
   const transcodingProccesses = filteredDescriptors.map(async (d) => {
     const { name, transcode, mime } = d
 
-    const locator = getLocator("S3", key, name)
+    const locator = getLocator("S3", "videos", key, name)
     const writeStream = getStorageWriteStream(locator, mime)
     const readStream = createReadStream(pathToVideo)
 

@@ -26,7 +26,7 @@ export const ingestVideo =
     const duration = metadata.probed.format.duration!
     const key = getVideoKey()
 
-    const originalLocator = getLocator("S3", key, "original")
+    const originalLocator = getLocator("S3", "videos", key, "original")
 
     const writeStream = getStorageWriteStream(originalLocator, metadata.mime)
     const readStream = createReadStream(upload.path)
