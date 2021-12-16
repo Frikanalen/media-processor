@@ -1,11 +1,10 @@
-import { Job } from "bull"
-import { FfprobeData } from "fluent-ffmpeg"
 import { createReadStream } from "fs"
 import { getLocator } from "../media/helpers/getLocator"
 import { getStorageWriteStream } from "../media/helpers/getStorageWriteStream"
 import { createThumbnail } from "./helpers/createThumbnail"
 import { createVideoMediaAsset } from "./helpers/createVideoMediaAsset"
 import { getVideoDescriptors } from "./helpers/getVideoDescriptors"
+import { getVideoThumbnailDescriptor } from "./helpers/getVideoThumbnailDescriptors"
 import { VideoJob } from "./types"
 
 export default async function process(job: VideoJob) {
@@ -14,16 +13,40 @@ export default async function process(job: VideoJob) {
   const finished = job.data.finished ?? []
 
   const pathToThumbnail = await ensureThumbnail(job)
-  throw new Error("Thumbnails not implemented!")
 
+  // Create thumbnail assets
+  for (const d of getVideoThumbnailDescriptor()) {
+    const { name, transcode, mime, width, height } = d
+
+    const locator = getLocator("S3", key, name)
+    const writeStream = getStorageWriteStream(locator, mime)
+    const readStream = createReadStream(pathToThumbnail)
+
+    await transcode({
+      onProgress: () => {},
+      read: readStream,
+      write: writeStream,
+    })
+
+    await createVideoMediaAsset({
+      type: name,
+      metadata: { width, height },
+      mediaId,
+      locator,
+    })
+  }
+
+  // Filter out already finished descriptors
   const filteredDescriptors = getVideoDescriptors().filter(
     (d) => !finished.includes(d.name)
   )
 
+  // Handle progress divided by how many transcoding jobs
   const handleProgress = (progress: number) => {
     job.progress(progress / filteredDescriptors.length)
   }
 
+  // Map all transcoding jobs into a concurrent list of promises
   const transcodingProccesses = filteredDescriptors.map(async (d) => {
     const { name, transcode, mime } = d
 
