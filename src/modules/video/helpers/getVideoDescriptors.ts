@@ -20,7 +20,7 @@ export const getVideoDescriptors = (): VideoDescriptor[] => {
   return [
     {
       name: "broadcastable",
-      mime: "video/quicktime",
+      mime: "application/mxf",
       transcode: transcodeToBroadcastable,
     },
     {

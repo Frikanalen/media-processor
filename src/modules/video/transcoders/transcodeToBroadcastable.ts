@@ -11,6 +11,8 @@ export const transcodeToBroadcastable: Transcoder = async (options) => {
       .format("mxf")
       .videoCodec("libx264")
       .outputOption("-crf 18")
+      .outputOptions("-ar 48000")
+      .outputOptions("-ac 2")
       .audioCodec("pcm_s16le")
       .aspect("16:9")
       .keepDAR()
