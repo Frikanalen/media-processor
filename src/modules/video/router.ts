@@ -3,7 +3,7 @@ import { ingestVideo } from "./middleware/ingestVideo"
 
 const router = getTusRouter({
   type: "video",
-  afterUploadMiddleware: [ingestVideo],
+  afterUploadMiddleware: [ingestVideo()],
 })
 
 export { router as videoRouter }
