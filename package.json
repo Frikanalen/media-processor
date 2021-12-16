@@ -10,7 +10,7 @@
     "test:watch": "jest --coverage --watchAll",
     "build": "tsc",
     "build:watch": "onchange 'src/*.ts' 'src/**/*.ts' -- yarn run build",
-    "start": "tsc && node src/ingest.js",
+    "start": "node ./build/index.js",
     "dev": "ts-node-dev src/index.ts"
   },
   "dependencies": {
