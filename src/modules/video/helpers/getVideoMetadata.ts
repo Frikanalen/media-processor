@@ -12,7 +12,7 @@ export const getVideoMetadata = async (
   path: string
 ): Promise<VideoMetadata> => {
   const probed = await probe(path)
-  const mime = execSync(`file -b --mime-type ${path}`).toString()
+  const mime = execSync(`file -b --mime-type ${path}`).toString().trim()
 
   if (probed.streams.length < 1) {
     throw new Error("No available streams!")
