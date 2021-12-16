@@ -14,7 +14,7 @@ export type ThumbnailDescriptor<N extends string> = WebPDescriptor<N> & {
 const dimensions = {
   large: [1280, 720],
   medium: [852, 480],
-  small: [480, 360],
+  small: [360, 640],
 }
 
 export const getVideoThumbnailDescriptor = (): ThumbnailDescriptor<any>[] => {

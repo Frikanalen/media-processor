@@ -15,7 +15,6 @@ export const transcodeToWebP =
     const transform = sharp(Buffer.concat(chunks))
       .resize({ width, height, fit: sharp.fit.contain })
       .webp()
-      .pipe(write)
 
     await pipeline(read, transform, write)
   }
