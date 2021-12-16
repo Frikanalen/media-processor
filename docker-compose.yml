@@ -1,0 +1,10 @@
+version: "3.4"
+services:
+  redis:
+    image: "redis:alpine"
+    ports:
+      - "6379:6379"
+
+  s3-backend:
+    image: scireum/s3-ninja
+    network_mode: host
