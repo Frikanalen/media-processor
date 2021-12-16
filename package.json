@@ -19,6 +19,7 @@
     "@types/fluent-ffmpeg": "^2.1.17",
     "axios": "^0.24.0",
     "bull": "^4.1.4",
+    "dotenv": "^10.0.0",
     "ffmpeg": "^0.0.4",
     "fluent-ffmpeg": "^2.1.2",
     "jest": "^27.0.6",
