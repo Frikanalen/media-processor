@@ -5,7 +5,7 @@ import { Stream } from "stream"
 import { HttpError } from "../../core/classes/HttpError"
 import { ResumableUploadData } from "../types/ResumableUploadData"
 import { resumableUploadNamespace } from "../namespaces/resumableUploadNamespace"
-import { TUS_TEMP_FOLDER } from "../constants"
+import { TEMP_UPLOAD_FOLDER } from "../../core/constants"
 
 const openAsync = promisify(open)
 const closeAsync = promisify(close)
@@ -24,7 +24,7 @@ export class ResumableUpload {
   constructor(private data: ResumableUploadData) {}
 
   public static async create(options: ResumableUploadCreateOptions) {
-    const path = `${TUS_TEMP_FOLDER}/${randomBytes(16).toString("hex")}`
+    const path = `${TEMP_UPLOAD_FOLDER}/${randomBytes(16).toString("hex")}`
     const key = `${randomBytes(16).toString("hex")}-${options.user}`
 
     const upload = new ResumableUpload({ ...options, offset: 0, path, key })

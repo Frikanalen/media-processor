@@ -1,3 +1,5 @@
+export const TEMP_UPLOAD_FOLDER = "tmp-upload"
+
 export const API_BASE_URL = process.env.FK_API
 
 if (!API_BASE_URL) {
