@@ -8,7 +8,7 @@ export const transcodeToBroadcastable: Transcoder = async (options) => {
     ffmpeg()
       .input(read)
       .output(write)
-      .format("mov")
+      .format("mxf")
       .videoCodec("libx264")
       .outputOption("-crf 18")
       .audioCodec("pcm_s16le")
