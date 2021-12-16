@@ -1,40 +1,40 @@
-import { Middleware } from "koa";
-import { HttpError } from "../classes/HttpError";
-import * as Yup from "yup";
+import { Middleware } from "koa"
+import { HttpError } from "../classes/HttpError"
+import * as Yup from "yup"
 
 export const handleError = (): Middleware => async (context, next) => {
   try {
-    return await next();
-  } catch (error) {
+    return await next()
+  } catch (error: any) {
     if (error instanceof HttpError) {
-      const { code, reason, details } = error;
+      const { code, reason, details } = error
 
-      context.status = code;
+      context.status = code
       context.body = {
         message: reason,
         details,
-      };
+      }
 
-      return;
+      return
     }
 
     if (error instanceof Yup.ValidationError) {
-      context.status = 400;
+      context.status = 400
       context.body = {
         message: "Validation Error",
         details: error.errors,
-      };
+      }
 
-      return;
+      return
     }
 
-    context.status = 500;
+    context.status = 500
     context.body = {
       message: "Internal Server Error",
-    };
+    }
 
-    console.error(error);
+    console.error(error)
 
-    return;
+    return
   }
-};
+}
