@@ -1,4 +1,4 @@
-import { createReadStream } from "fs"
+import { unlink } from "fs/promises"
 import { getLocator } from "../media/helpers/getLocator"
 import { getStorageWriteStream } from "../media/helpers/getStorageWriteStream"
 import { createThumbnail } from "./helpers/createThumbnail"
@@ -70,6 +70,9 @@ export default async function process(job: VideoJob) {
   })
 
   await Promise.allSettled(transcodingProccesses)
+
+  await unlink(pathToVideo)
+  await unlink(pathToThumbnail)
 }
 
 const ensureThumbnail = async (job: VideoJob) => {
