@@ -5,16 +5,11 @@ import { pipeline } from "stream/promises"
 export const transcodeToWebP =
   (width: number, height: number): Transcoder =>
   async (options) => {
-    const { read, write } = options
+    const { pathToFile, write } = options
 
-    const chunks = []
-    for await (const chunk of read) {
-      chunks.push(chunk)
-    }
-
-    const transform = sharp(Buffer.concat(chunks))
+    const transform = sharp(pathToFile)
       .resize({ width, height, fit: sharp.fit.contain })
       .webp()
 
-    await pipeline(read, transform, write)
+    await pipeline(transform, write)
   }

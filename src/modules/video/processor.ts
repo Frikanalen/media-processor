@@ -20,11 +20,10 @@ export default async function process(job: VideoJob) {
 
     const locator = getLocator("S3", "images", key, name)
     const writeStream = getStorageWriteStream(locator, mime)
-    const readStream = createReadStream(pathToThumbnail)
 
     await transcode({
       onProgress: () => {},
-      read: readStream,
+      pathToFile: pathToThumbnail,
       write: writeStream,
     })
 
@@ -52,11 +51,10 @@ export default async function process(job: VideoJob) {
 
     const locator = getLocator("S3", "videos", key, name)
     const writeStream = getStorageWriteStream(locator, mime)
-    const readStream = createReadStream(pathToVideo)
 
     await transcode({
       onProgress: handleProgress,
-      read: readStream,
+      pathToFile: pathToVideo,
       write: writeStream,
     })
 
@@ -71,7 +69,7 @@ export default async function process(job: VideoJob) {
     await job.update({ ...job.data, finished })
   })
 
-  await Promise.all(transcodingProccesses)
+  await Promise.allSettled(transcodingProccesses)
 }
 
 const ensureThumbnail = async (job: VideoJob) => {

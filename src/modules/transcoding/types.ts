@@ -1,7 +1,7 @@
-import { Readable, Writable } from "stream"
+import { Writable } from "stream"
 
 export type TranscoderOptions = {
-  read: Readable
+  pathToFile: string
   write: Writable
   onProgress: (value: number) => void
 }

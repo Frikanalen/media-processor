@@ -2,11 +2,11 @@ import ffmpeg from "fluent-ffmpeg"
 import { Transcoder } from "../../transcoding/types"
 
 export const transcodeToBroadcastable: Transcoder = async (options) => {
-  const { read, write, onProgress } = options
+  const { pathToFile, write, onProgress } = options
 
   return new Promise((resolve, reject) => {
     ffmpeg()
-      .input(read)
+      .input(pathToFile)
       .output(write)
       .format("mxf")
       .videoCodec("libx264")
