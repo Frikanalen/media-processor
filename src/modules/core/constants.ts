@@ -1,3 +1,5 @@
+export const IS_PROD = process.env.NODE_ENV === "production"
+
 export const TEMP_UPLOAD_FOLDER = "tmp-upload"
 
 export const API_BASE_URL = process.env.FK_API
