@@ -6,5 +6,6 @@ const credentials = new AWS.EnvironmentCredentials("AWS")
 
 export const s3Client = new S3({
   endpoint: AWS_ENDPOINT,
+  forcePathStyle: true,
   credentials,
 })
