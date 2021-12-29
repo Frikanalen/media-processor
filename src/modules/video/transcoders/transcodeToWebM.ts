@@ -9,6 +9,7 @@ export const transcodeToWebM: Transcoder = async (options) => {
       .input(pathToFile)
       .output(write)
       .format("webm")
+      .videoCodec("libvpx")
       .aspect("16:9")
       .keepDAR()
       .size("1920x1080")
