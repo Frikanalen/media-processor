@@ -10,6 +10,8 @@ export const transcodeToWebM: Transcoder = async (options) => {
       .output(write)
       .format("webm")
       .videoCodec("libvpx")
+      .addOutputOption("-cpu-used -5")
+      .addOutputOption("-deadline realtime")
       .aspect("16:9")
       .keepDAR()
       .size("1920x1080")
