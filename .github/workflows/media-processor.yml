@@ -1,4 +1,4 @@
-name: Build toches
+name: Build media processor
 on:
   push:
     branches:
