@@ -9,3 +9,4 @@ node_modules
 
 src/client
 open-api-spec.json
+build
