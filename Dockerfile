@@ -20,6 +20,7 @@ run yarn install --quiet --dev
 
 copy . .
 
+run yarn generate
 run yarn build
 
 run ls
