@@ -5,7 +5,7 @@ import { VideoMetadata } from "./helpers/getVideoMetadata"
 export type VideoJobData = {
   key: string
   pathToVideo: string
-  pathToThumbnail?: string
+  pathToStill?: string
   metadata: VideoMetadata
   mediaId: number
   finished?: VideoDescriptorName[]

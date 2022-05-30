@@ -1,6 +1,7 @@
 import { execSync } from "child_process"
 import { FfprobeData } from "fluent-ffmpeg"
-import { probe } from "../../core/helpers/probe"
+import { probeVideo } from "../../core/helpers/probeVideo"
+import { log } from "../../core/log"
 
 export type VideoMetadata = {
   version: "1"
@@ -11,7 +12,9 @@ export type VideoMetadata = {
 export const getVideoMetadata = async (
   path: string
 ): Promise<VideoMetadata> => {
-  const probed = await probe(path)
+  log.info(`Running ffprobe on "${path}"`)
+
+  const probed = await probeVideo(path)
   const mime = execSync(`file -b --mime-type ${path}`).toString().trim()
 
   if (probed.streams.length < 1) {

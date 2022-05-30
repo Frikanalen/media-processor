@@ -6,7 +6,7 @@ export const sendCORSHeaders = (): Middleware => (context, next) => {
 
   if (IS_PROD) return next()
 
-  context.set("Access-Control-Allow-Origin", "http://localhost:3000")
+  context.set("Access-Control-Allow-Origin", "http://localhost")
   context.set("Access-Control-Allow-Credentials", "true")
   context.set(
     "Access-Control-Allow-Methods",

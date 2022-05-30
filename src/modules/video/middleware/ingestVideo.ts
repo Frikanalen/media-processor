@@ -5,27 +5,31 @@ import { getLocator } from "../../media/helpers/getLocator"
 import { getStorageWriteStream } from "../../media/helpers/getStorageWriteStream"
 import { PatchUploadState } from "../../tus/middleware/patchUpload"
 import { makeVideoKey } from "../helpers/makeVideoKey"
-import { getVideoMetadata, VideoMetadata } from "../helpers/getVideoMetadata"
+import { getVideoMetadata } from "../helpers/getVideoMetadata"
 
 import stream from "stream/promises"
 import { videoQueue } from "../queue"
 import { FK_API_KEY } from "../../core/constants"
 import { MediaService } from "../../../client"
+import { log } from "../../core/log"
+
+const getMetadataOrThrow400 = async (path: string) => {
+  try {
+    return await getVideoMetadata(path)
+  } catch {
+    throw new HttpError(400, "Invalid file")
+  }
+}
 
 export const ingestVideo =
   (): Middleware<PatchUploadState> => async (context, next) => {
     const { upload } = context.state
 
-    let metadata: VideoMetadata
-
-    try {
-      metadata = await getVideoMetadata(upload.path)
-    } catch {
-      throw new HttpError(400, "Invalid file")
-    }
-
+    const metadata = await getMetadataOrThrow400(upload.path)
     const duration = metadata.probed.format.duration!
     const key = makeVideoKey()
+
+    log.info("Copying file to S3 backend")
 
     const originalLocator = getLocator("S3", "videos", key, "original")
 
@@ -33,6 +37,8 @@ export const ingestVideo =
     const readStream = createReadStream(upload.path)
 
     await stream.pipeline(readStream, writeStream)
+
+    log.info("Registering new file on backend")
 
     const { id } = await MediaService.postVideosMedia(FK_API_KEY, {
       locator: originalLocator,

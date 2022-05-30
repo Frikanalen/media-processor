@@ -1,52 +1,55 @@
 import { unlink } from "fs/promises"
 import { getLocator } from "../media/helpers/getLocator"
 import { getStorageWriteStream } from "../media/helpers/getStorageWriteStream"
-import { createThumbnail } from "./helpers/createThumbnail"
-import { createVideoMediaAsset } from "./helpers/createVideoMediaAsset"
+import { grabStill } from "./helpers/grabStill"
 import { getVideoDescriptors } from "./helpers/getVideoDescriptors"
-import { getVideoThumbnailDescriptor } from "./helpers/getVideoThumbnailDescriptors"
+import { desiredThumbnails } from "./helpers/thumbnailDescriptors"
 import { VideoJob } from "./types"
+import { log } from "../core/log"
+import { MediaService } from "../../client"
+import { FK_API_KEY } from "../core/constants"
 
 export default async function process(job: VideoJob) {
   const { key, pathToVideo, mediaId } = job.data
 
   const finished = job.data.finished ?? []
 
-  const pathToThumbnail = await ensureThumbnail(job)
+  const pathToStill = job.data.pathToStill ?? (await makeStill(job))
 
   // Create thumbnail assets
-  for (const d of getVideoThumbnailDescriptor()) {
+  for (const d of desiredThumbnails()) {
     const { name, transcode, mime, width, height } = d
 
     const locator = getLocator("S3", "images", key, name)
     const writeStream = getStorageWriteStream(locator, mime)
 
     await transcode({
-      onProgress: () => {},
-      pathToFile: pathToThumbnail,
+      onProgress: (progress) => {
+        log.debug(`${progress}`)
+      },
+      pathToFile: pathToStill,
       write: writeStream,
     })
 
-    await createVideoMediaAsset({
+    await MediaService.postVideosMediaAssets(mediaId, FK_API_KEY, {
       type: name,
       metadata: { width, height },
-      mediaId,
       locator,
     })
   }
 
   // Filter out already finished descriptors
-  const filteredDescriptors = getVideoDescriptors().filter(
+  const pendingAssets = getVideoDescriptors().filter(
     (d) => !finished.includes(d.name)
   )
 
   // Handle progress divided by how many transcoding jobs
   const handleProgress = (progress: number) => {
-    job.progress(progress / filteredDescriptors.length)
+    job.progress(progress / pendingAssets.length)
   }
 
   // Map all transcoding jobs into a concurrent list of promises
-  const transcodingProccesses = filteredDescriptors.map(async (d) => {
+  const transcodingProcesses = pendingAssets.map(async (d) => {
     const { name, transcode, mime } = d
 
     const locator = getLocator("S3", "videos", key, name)
@@ -58,35 +61,37 @@ export default async function process(job: VideoJob) {
       write: writeStream,
     })
 
-    await createVideoMediaAsset({
+    await MediaService.postVideosMediaAssets(mediaId, FK_API_KEY, {
       type: name,
       metadata: {},
-      mediaId,
       locator,
     })
 
     finished.push(name)
+
     await job.update({ ...job.data, finished })
   })
 
-  await Promise.allSettled(transcodingProccesses)
+  await Promise.allSettled(transcodingProcesses)
 
   await unlink(pathToVideo)
-  await unlink(pathToThumbnail)
+  await unlink(pathToStill)
 }
 
-const ensureThumbnail = async (job: VideoJob) => {
-  const { pathToVideo, pathToThumbnail, metadata } = job.data
-
-  if (pathToThumbnail) {
-    return pathToThumbnail
-  }
+const makeStill = async (job: VideoJob) => {
+  const { pathToVideo, metadata } = job.data
 
   const { duration } = metadata.probed.format
-  const seek = Math.round(duration! * 0.25)
 
-  const newPathToThumbnail = await createThumbnail(pathToVideo, seek)
-  await job.update({ ...job.data, pathToThumbnail: newPathToThumbnail })
+  if (duration === undefined) {
+    log.error(`File upload ${pathToVideo} has no duration!`)
+  }
 
-  return newPathToThumbnail
+  const seek = Math.round(duration ?? 0 * 0.25)
+
+  const pathToStill = await grabStill(pathToVideo, seek)
+
+  await job.update({ ...job.data, pathToStill })
+
+  return pathToStill
 }
