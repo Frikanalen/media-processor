@@ -11,8 +11,8 @@
     "build": "tsc",
     "build:watch": "onchange 'src/*.ts' 'src/**/*.ts' -- yarn run build",
     "start": "node ./build/index.js",
-    "generate": "curl -O https://beta.frikanalen.no/api/v2/open-api-spec.json | openapi --input ./open-api-spec.json -c axios --output ./src/client",
-    "generate-local": "curl -O http://localhost:8000/open-api-spec.json | openapi --input ./open-api-spec.json -c axios --output ./src/client",
+    "generate": "curl -O https://beta.frikanalen.no/api/v2/open-api-spec.json && openapi --input ./open-api-spec.json -c axios --output ./src/client",
+    "generate-local": "curl -O http://localhost:8000/open-api-spec.json && openapi --input ./open-api-spec.json -c axios --output ./src/client",
     "dev": "ts-node-dev src/index.ts"
   },
   "dependencies": {
