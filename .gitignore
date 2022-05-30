@@ -8,3 +8,4 @@ node_modules
 /tmp-upload
 
 src/client
+open-api-spec.json

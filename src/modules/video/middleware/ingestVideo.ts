@@ -1,15 +1,16 @@
 import { createReadStream } from "fs"
 import { Middleware } from "koa"
 import { HttpError } from "../../core/classes/HttpError"
-import { createVideoMedia } from "../helpers/createVideoMedia"
 import { getLocator } from "../../media/helpers/getLocator"
 import { getStorageWriteStream } from "../../media/helpers/getStorageWriteStream"
 import { PatchUploadState } from "../../tus/middleware/patchUpload"
-import { getVideoKey } from "../helpers/getVideoKey"
+import { makeVideoKey } from "../helpers/makeVideoKey"
 import { getVideoMetadata, VideoMetadata } from "../helpers/getVideoMetadata"
 
 import stream from "stream/promises"
 import { videoQueue } from "../queue"
+import { FK_API_KEY } from "../../core/constants"
+import { MediaService } from "../../../client"
 
 export const ingestVideo =
   (): Middleware<PatchUploadState> => async (context, next) => {
@@ -24,7 +25,7 @@ export const ingestVideo =
     }
 
     const duration = metadata.probed.format.duration!
-    const key = getVideoKey()
+    const key = makeVideoKey()
 
     const originalLocator = getLocator("S3", "videos", key, "original")
 
@@ -33,7 +34,7 @@ export const ingestVideo =
 
     await stream.pipeline(readStream, writeStream)
 
-    const { id } = await createVideoMedia({
+    const { id } = await MediaService.postVideosMedia(FK_API_KEY, {
       locator: originalLocator,
       fileName: upload.filename,
       duration,

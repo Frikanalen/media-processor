@@ -6,23 +6,24 @@ export type PatchUploadState = {
   upload: ResumableUpload
 }
 
-export const patchUpload = (): Middleware<PatchUploadState> => async (context, next) => {
-  const { upload } = context.state
+export const patchUpload =
+  (): Middleware<PatchUploadState> => async (context, next) => {
+    const { upload } = context.state
 
-  const offset = Number(context.get("Upload-Offset"))
+    const offset = Number(context.get("Upload-Offset"))
 
-  if (offset !== upload.offset || isNaN(offset)) {
-    throw new HttpError(400, "Invalid offset")
+    if (offset !== upload.offset || isNaN(offset)) {
+      throw new HttpError(400, "Invalid offset")
+    }
+
+    await upload.writeToFile(context.req)
+
+    context.set("Upload-Offset", String(upload.offset))
+    context.set("Upload-Length", String(upload.length))
+
+    if (upload.finished) {
+      return next()
+    }
+
+    context.status = 204
   }
-
-  await upload.writeToFile(context.req)
-
-  context.set("Upload-Offset", String(upload.offset))
-  context.set("Upload-Length", String(upload.length))
-
-  if (upload.finished) {
-    return next()
-  }
-
-  context.status = 204
-}

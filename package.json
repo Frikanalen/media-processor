@@ -11,6 +11,8 @@
     "build": "tsc",
     "build:watch": "onchange 'src/*.ts' 'src/**/*.ts' -- yarn run build",
     "start": "node ./build/index.js",
+    "generate": "wget https://beta.frikanalen.no/api/v2/open-api-spec.json -O open-api-spec.json && openapi --input ./open-api-spec.json -c axios --output ./src/client",
+    "generate-local": "wget http://localhost:8000/open-api-spec.json -O open-api-spec.json && openapi --input ./open-api-spec.json -c axios --output ./src/client",
     "dev": "ts-node-dev src/index.ts"
   },
   "dependencies": {
@@ -45,6 +47,8 @@
     "@types/node": "^16.0.1",
     "@types/sharp": "^0.29.4",
     "onchange": "^7.1.0",
+    "openapi": "^1.0.1",
+    "openapi-typescript-codegen": "^0.22.0",
     "prettier": "^2.3.2",
     "ts-node-dev": "^1.1.8"
   },
