@@ -27,15 +27,19 @@ export const authenticate =
     const { required } = options
     const cookie = context.get("Cookie")
 
-    const { data } = await axios.get<AuthData>("/auth/user", {
+    const { data, status } = await axios.get<AuthData>("/auth/user", {
       baseURL: FK_API,
-      xsrfCookieName: "fk:csrf",
+      xsrfCookieName: "fk-csrf",
       xsrfHeaderName: "X-CSRF-Token",
       headers: {
         Cookie: cookie,
         [SECRET_KEY_HEADER]: FK_API_KEY,
       },
     })
+
+    if (status !== 200) {
+      throw new HttpError(500, "could not reach backend to auth user")
+    }
 
     const { user } = data
 
