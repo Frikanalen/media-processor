@@ -44,7 +44,7 @@ export const createUpload =
       type,
     })
 
-    context.set("Location", `${context.path.substring(1)}/${upload.key}`)
+    context.set("Location", `${upload.type}/${upload.key}`)
     context.status = 201
     context.state.upload = upload
 
