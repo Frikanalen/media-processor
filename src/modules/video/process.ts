@@ -9,16 +9,17 @@ import { log } from "../core/log"
 import { MediaService } from "../../client"
 import { FK_API_KEY } from "../core/constants"
 
-export default async function process(job: VideoJob) {
+export const process = async (job: VideoJob) => {
   const { key, pathToVideo, mediaId } = job.data
-
   const finished = job.data.finished ?? []
+
+  log.info(`Processing start for mediaId ${mediaId}`)
 
   const pathToStill = job.data.pathToStill ?? (await makeStill(job))
 
   // Create thumbnail assets
-  for (const d of desiredThumbnails()) {
-    const { name, transcode, mime, width, height } = d
+  for (const target of desiredThumbnails()) {
+    const { name, transcode, mime, width, height } = target
 
     const locator = getLocator("S3", "images", key, name)
     const writeStream = getStorageWriteStream(locator, mime)
@@ -74,6 +75,8 @@ export default async function process(job: VideoJob) {
 
   await Promise.allSettled(transcodingProcesses)
 
+  log.info(`Processing finished for mediaId ${mediaId}, cleaning up`)
+
   await unlink(pathToVideo)
   await unlink(pathToStill)
 }
@@ -87,7 +90,7 @@ const makeStill = async (job: VideoJob) => {
     log.error(`File upload ${pathToVideo} has no duration!`)
   }
 
-  const seek = Math.round(duration ?? 0 * 0.25)
+  const seek = Math.floor((duration ?? 0) * 0.25)
 
   const pathToStill = await grabStill(pathToVideo, seek)
 

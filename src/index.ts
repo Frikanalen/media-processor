@@ -16,7 +16,7 @@ OpenAPI.BASE = FK_API
 OpenAPI.HEADERS = async (r) => {
   return {
     [SECRET_KEY_HEADER]: FK_API_KEY,
-    "X-CSRF-Token": r?.cookies?.["fk:csrf"] ?? "",
+    "X-CSRF-Token": r?.cookies?.["fk-csrf"] ?? "",
   }
 }
 const port = Number(process.env.PORT) || 8001
@@ -27,7 +27,7 @@ app.use(logRequest())
 app.use(handleError())
 app.use(bodyParser())
 app.use(sendCORSHeaders())
-app.use(videoRouter.middleware())
+app.use(videoRouter.routes())
 
 async function main() {
   await redis.connect()

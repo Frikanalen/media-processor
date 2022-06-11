@@ -7,16 +7,15 @@ export const grabStill = (path: string, seek: number) => {
   const name = basename(path)
   const outputPath = path.replace(name, `${name}-still.png`)
 
-  log.info(`Generating thumbnail for ${path} @ ${seek}s`)
+  log.info(`Generating thumbnail for ${path} @ ${seek}s -> ${outputPath}`)
 
   return new Promise<string>((resolve, reject) => {
-    ffmpeg()
+    ffmpeg({ logger: log })
       .input(path)
-      .output(outputPath)
-      .frames(1)
       .seek(seek)
+      .frames(1)
       .on("end", () => resolve(outputPath))
       .on("error", (e) => reject(e))
-      .run()
+      .save(outputPath)
   })
 }

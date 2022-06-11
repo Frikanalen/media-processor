@@ -16,9 +16,7 @@ export type Options = {
 export const getTusRouter = (options: Options) => {
   const { type, maxSize, afterUploadMiddleware } = options
 
-  const prefix = `/upload/${type}`
-  const router = new Router({ prefix })
-
+  const router = new Router({ prefix: `/upload/${type}` })
   const tusHeaders = setTusHeaders(maxSize)
 
   router.post(
