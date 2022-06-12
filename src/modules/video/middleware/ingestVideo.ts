@@ -26,18 +26,19 @@ export const ingestVideo =
 
     const metadata = await getMetadataOrThrow400(upload.path)
     const duration = metadata.probed.format.duration!
-    const key = makeVideoKey()
 
-    log.info(`Copying file to S3 as original/${key}`)
+    const Body = createReadStream(upload.path)
+    const Bucket = "videos"
+    const Key = makeVideoKey()
 
-    const originalLocator = getLocator("S3", "videos", key, "original")
+    log.info(`Copying file to S3 as ${Bucket}/${Key}`)
 
     const originalUpload = new Upload({
       client: s3Client,
       params: {
-        Bucket: "videos",
-        Key: key,
-        Body: createReadStream(upload.path),
+        Body,
+        Bucket,
+        Key,
         ContentType: metadata.mime,
       },
     })
@@ -45,6 +46,8 @@ export const ingestVideo =
     await originalUpload.done()
 
     log.info("upload complete; registering file on backend")
+
+    const originalLocator = getLocator("S3", Bucket, Key, "original")
 
     const { id: mediaId } = await MediaService.postVideosMedia(FK_API_KEY, {
       locator: originalLocator,
@@ -57,7 +60,7 @@ export const ingestVideo =
       pathToVideo: upload.path,
       mediaId,
       metadata,
-      key,
+      key: Key,
     })
 
     const jobId = typeof jobIdRaw === "string" ? parseInt(jobIdRaw) : jobIdRaw
