@@ -21,7 +21,7 @@ export const process = async (job: VideoJob) => {
   for (const target of desiredThumbnails()) {
     const { name, transcode, mime, width, height } = target
 
-    const locator = getLocator("S3", "images", key, name)
+    const locator = getLocator("S3", "media", key, name)
     const writeStream = getStorageWriteStream(locator, mime)
 
     await transcode({
@@ -53,7 +53,7 @@ export const process = async (job: VideoJob) => {
   const transcodingProcesses = pendingAssets.map(async (d) => {
     const { name, transcode, mime } = d
 
-    const locator = getLocator("S3", "videos", key, name)
+    const locator = getLocator("S3", "media", key, name)
     const writeStream = getStorageWriteStream(locator, mime)
 
     await transcode({

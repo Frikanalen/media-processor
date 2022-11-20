@@ -10,6 +10,7 @@ import { log } from "./modules/core/log"
 import { FK_API, FK_API_KEY, SECRET_KEY_HEADER } from "./modules/core/constants"
 
 import { OpenAPI } from "./client"
+import { statusUpdate } from "./modules/status/router"
 
 OpenAPI.BASE = FK_API
 
@@ -27,7 +28,8 @@ app.use(logRequest())
 app.use(handleError())
 app.use(bodyParser())
 app.use(sendCORSHeaders())
-app.use(videoRouter.routes())
+app.use(videoRouter.prefix("/upload/video").routes())
+app.use(statusUpdate("/upload/status"))
 
 async function main() {
   await redis.connect()

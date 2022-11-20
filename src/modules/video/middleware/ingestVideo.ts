@@ -14,12 +14,20 @@ import { s3Client } from "../../s3/client"
 
 const getMetadataOrThrow400 = async (path: string) => {
   try {
-    return await getVideoMetadata(path)
+    const metadata = await getVideoMetadata(path)
+
+    // Despite the typings, "duration" comes back as "N/A" if it's an image
+    if ((metadata.probed.format.duration! as unknown as string) === "N/A")
+      throw new Error()
+
+    return metadata
   } catch {
     throw new HttpError(400, "Invalid file")
   }
 }
 
+// TODO: This would probably be better solved by using tusd, storing directly to S3
+//   and then calling an endpoint in media-processor to get metadata/acceptance.
 export const ingestVideo =
   (): Middleware<PatchUploadState> => async (context, next) => {
     const { upload } = context.state

@@ -29,8 +29,8 @@ REDIS_URL=redis://localhost:6379
 
 ## TODO
 
-* Create functioning mock environment for testing
-* Progress report endpoints so end-users can see the state of their videos
+- Create functioning mock environment for testing
+- Progress report endpoints so end-users can see the state of their videos
 
 ## Development
 

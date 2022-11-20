@@ -21,9 +21,7 @@ export const patchUpload =
     context.set("Upload-Offset", String(upload.offset))
     context.set("Upload-Length", String(upload.length))
 
-    if (upload.finished) {
-      return next()
-    }
+    if (upload.finished) return next()
 
     context.status = 204
   }

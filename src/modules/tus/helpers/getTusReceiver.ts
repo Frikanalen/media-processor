@@ -10,13 +10,12 @@ import { authenticate } from "../../auth/middleware/authenticate"
 export type Options = {
   type: string
   maxSize?: number
-  afterUploadMiddleware: Middleware<any>[]
+  onComplete: Middleware<any>[]
 }
 
-export const getTusRouter = (options: Options) => {
-  const { type, maxSize, afterUploadMiddleware } = options
+export const getTusReceiver = (router: Router, options: Options) => {
+  const { type, maxSize, onComplete } = options
 
-  const router = new Router({ prefix: `/upload/${type}` })
   const tusHeaders = setTusHeaders(maxSize)
 
   router.post(
@@ -39,7 +38,7 @@ export const getTusRouter = (options: Options) => {
     authenticate({ required: true }),
     getUpload(type),
     patchUpload(),
-    ...afterUploadMiddleware
+    ...onComplete
   )
 
   router.options("/", tusHeaders)

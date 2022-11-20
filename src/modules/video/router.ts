@@ -1,9 +1,10 @@
-import { getTusRouter } from "../tus/helpers/getTusRouter"
+import Router from "@koa/router"
+import { getTusReceiver } from "../tus/helpers/getTusReceiver"
 import { ingestVideo } from "./middleware/ingestVideo"
 
-const router = getTusRouter({
+const router = getTusReceiver(new Router(), {
   type: "video",
-  afterUploadMiddleware: [ingestVideo()],
+  onComplete: [ingestVideo()],
 })
 
 export { router as videoRouter }

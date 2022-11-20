@@ -1,7 +1,7 @@
 import { open, close, createWriteStream, unlink, stat } from "fs"
 import { promisify } from "util"
 import { randomBytes } from "crypto"
-import { Stream } from "stream"
+import { Readable } from "stream"
 import { HttpError } from "../../core/classes/HttpError"
 import { ResumableUploadData } from "../types/ResumableUploadData"
 import { resumableUploadNamespace } from "../namespaces/resumableUploadNamespace"
@@ -20,6 +20,7 @@ export type ResumableUploadCreateOptions = {
   metadata: Record<string, string>
 }
 
+// Redis-backed resumable upload
 export class ResumableUpload {
   constructor(private data: ResumableUploadData) {}
 
@@ -61,7 +62,7 @@ export class ResumableUpload {
     await closeAsync(descriptor)
   }
 
-  public writeToFile(stream: Stream) {
+  public writeToFile(readStream: Readable) {
     const { offset, path } = this.data
 
     const writeStream = createWriteStream(path, {
@@ -81,15 +82,15 @@ export class ResumableUpload {
         resolve(undefined)
       })
 
-      stream.on("data", (buffer: Buffer) => {
+      readStream.on("data", (buffer: Buffer) => {
         this.data.offset += buffer.length
       })
 
-      stream.on("error", () => {
+      readStream.on("error", () => {
         reject(new HttpError(500, "Stream error"))
       })
 
-      stream.pipe(writeStream)
+      readStream.pipe(writeStream)
     })
   }
 
