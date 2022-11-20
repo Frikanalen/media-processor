@@ -2,3 +2,5 @@ node_modules
 build
 Dockerfile
 src/client
+tmp-upload
+open-api-spec.json

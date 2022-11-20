@@ -1,51 +1,41 @@
-from jrottenberg/ffmpeg:4.4-nvidia as ffmpeg-base
+FROM jrottenberg/ffmpeg:4.4-nvidia as ffmpeg-base
 
-workdir /home/node 
+# To get apt to a working state we first have to delete the old nVidia CUDA key and apply the new one
+RUN apt-key del 7fa2af80
+RUN apt-get -o Acquire::AllowInsecureRepositories=true -o Acquire::AllowDowngradeToInsecureRepositories=true update
+RUN apt-get -o APT::Get::AllowUnauthenticated=true install cuda-keyring
+RUN rm /etc/apt/sources.list.d/cuda.list
 
-RUN apt install -y curl
-RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
+RUN apt-get update && apt-get install -y curl
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
 RUN curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor | tee /usr/share/keyrings/yarnkey.gpg >/dev/null
 RUN echo "deb [signed-by=/usr/share/keyrings/yarnkey.gpg] https://dl.yarnpkg.com/debian stable main" | tee /etc/apt/sources.list.d/yarn.list
 RUN apt-get update && apt-get install yarn nodejs
 
+FROM ffmpeg-base as deps
 
-# -------------
+WORKDIR /app
 
-from ffmpeg-base as builder
+COPY package.json yarn.lock /app/
 
-copy package.json .
-copy yarn.lock .
+RUN yarn --quiet
 
-run yarn install --quiet --dev
+FROM deps as builder
 
-copy . .
+WORKDIR /app
 
-run yarn generate
-run yarn build
+COPY --from=deps /app/node_modules ./
+COPY . .
 
-run ls
-run pwd
+RUN yarn generate
+RUN yarn build
 
-# -------------
+FROM ffmpeg-base
+WORKDIR /app
 
-from ffmpeg-base as deps
-
-copy package.json .
-copy yarn.lock .
-
-run yarn install --quiet
-
-# -------------
-from ffmpeg-base
-
-run ls
-
-copy . .
-copy --from=builder /home/node/build build 
-copy --from=deps /home/node/node_modules node_modules
-run ls
-run pwd
-run node --version
+COPY . .
+COPY --from=builder /app/build build/
+COPY --from=deps /app/node_modules node_modules/
 
 ENTRYPOINT ["/usr/bin/yarn"]
 
