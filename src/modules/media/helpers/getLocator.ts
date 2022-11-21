@@ -1,10 +1,10 @@
-import type { Locator, Provider } from "../types.js"
+import type { LocatorString, Provider } from "../types.js"
 
 export const getLocator = (
   provider: Provider,
   bucket: string,
   key: string,
   name: string
-): Locator => {
+): LocatorString => {
   return `${provider}:${bucket}:${key}/${name}`
 }

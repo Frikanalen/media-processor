@@ -5,7 +5,7 @@ export const transcodeToBroadcastable: Transcoder = async (options) => {
   const { pathToFile, write, onProgress } = options
 
   return new Promise((resolve, reject) => {
-    ffmpeg()
+    const broadcast = ffmpeg()
       .input(pathToFile)
       .output(write)
       .format("mxf")
@@ -18,9 +18,10 @@ export const transcodeToBroadcastable: Transcoder = async (options) => {
       .keepDAR()
       .size("1280x720")
       .autopad(true)
-      .on("progress", (progress) => onProgress(progress.percent))
-      .on("end", () => resolve())
-      .on("error", (e) => reject(e))
-      .run()
+
+    broadcast.on("progress", (progress) => onProgress(progress.percent))
+    broadcast.on("end", () => resolve())
+    broadcast.on("error", (e) => reject(e))
+    broadcast.run()
   })
 }

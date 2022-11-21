@@ -1,6 +1,5 @@
 import { unlink } from "fs/promises"
 import { getLocator } from "../media/helpers/getLocator.js"
-import { getStorageWriteStream } from "../media/helpers/getStorageWriteStream.js"
 import { grabStill } from "./helpers/grabStill"
 import { getVideoDescriptors } from "./helpers/getVideoDescriptors"
 import { desiredThumbnails } from "./helpers/thumbnailDescriptors"
@@ -8,8 +7,11 @@ import type { VideoJob } from "./types"
 import { log } from "../core/log.js"
 import { MediaService } from "../../client"
 import { FK_API_KEY } from "../core/constants.js"
+import fs from "fs"
+import { s3Client } from "../s3/client"
 
 export const process = async (job: VideoJob) => {
+  const bucket = "media"
   const { key, pathToVideo, mediaId } = job.data
   const finished = job.data.finished ?? []
 
@@ -20,23 +22,33 @@ export const process = async (job: VideoJob) => {
   // Create thumbnail assets
   for (const target of desiredThumbnails()) {
     const { name, transcode, mime, width, height } = target
+    const tempFileName = `tmp-upload/${job.id}_${name}`
+
     log.info(`Generating thumbnail ${name}`)
 
-    const locator = getLocator("S3", "media", key, name)
-    const writeStream = getStorageWriteStream(locator, mime)
-
+    const writeStream = await fs.createWriteStream(tempFileName)
     await transcode({
       onProgress: (progress) => {
-        log.debug(`${progress}`)
+        log.debug(`${progress}%`)
       },
       pathToFile: pathToStill,
       write: writeStream,
     })
+    await writeStream.close()
+
+    await s3Client.putObject({
+      Bucket: bucket,
+      Key: `${key}/${name}`,
+      Body: await fs.createReadStream(tempFileName),
+      ContentType: mime,
+    })
+
+    await fs.unlinkSync(tempFileName)
 
     await MediaService.postVideosMediaAssets(mediaId, FK_API_KEY, {
       type: name,
       metadata: { width, height },
-      locator,
+      locator: getLocator("S3", bucket, key, name),
     })
   }
 
@@ -47,32 +59,46 @@ export const process = async (job: VideoJob) => {
 
   // Handle progress divided by how many transcoding jobs
   const handleProgress = (progress: number) => {
+    log.debug(progress)
+    // FIXME: This isn't right at all...
     job.progress(progress / pendingAssets.length)
   }
 
   // Map all transcoding jobs into a concurrent list of promises
-  const transcodingProcesses = pendingAssets.map(async (d) => {
-    const { name, transcode, mime } = d
+  const transcodingProcesses = pendingAssets.map(
+    async ({ name, transcode, mime }) => {
+      const tempFileName = `tmp-upload/${job.id}_${name}`
+      log.info(`Generating asset ${name}`)
 
-    const locator = getLocator("S3", "media", key, name)
-    const writeStream = getStorageWriteStream(locator, mime)
+      const writeStream = await fs.createWriteStream(tempFileName)
 
-    await transcode({
-      onProgress: handleProgress,
-      pathToFile: pathToVideo,
-      write: writeStream,
-    })
+      await transcode({
+        onProgress: handleProgress,
+        pathToFile: pathToVideo,
+        write: writeStream,
+      })
+      await writeStream.close()
 
-    await MediaService.postVideosMediaAssets(mediaId, FK_API_KEY, {
-      type: name,
-      metadata: {},
-      locator,
-    })
+      await s3Client.putObject({
+        Bucket: bucket,
+        Key: `${key}/${name}`,
+        Body: await fs.createReadStream(tempFileName),
+        ContentType: mime,
+      })
 
-    finished.push(name)
+      await fs.unlinkSync(tempFileName)
 
-    await job.update({ ...job.data, finished })
-  })
+      await MediaService.postVideosMediaAssets(mediaId, FK_API_KEY, {
+        type: name,
+        metadata: {},
+        locator: getLocator("S3", "media", key, name),
+      })
+
+      finished.push(name)
+
+      await job.update({ ...job.data, finished })
+    }
+  )
 
   await Promise.allSettled(transcodingProcesses)
 

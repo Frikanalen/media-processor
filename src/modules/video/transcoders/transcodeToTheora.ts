@@ -5,7 +5,7 @@ export const transcodeToTheora: Transcoder = async (options) => {
   const { pathToFile, write, onProgress } = options
 
   return new Promise((resolve, reject) => {
-    ffmpeg()
+    const theora = ffmpeg()
       .input(pathToFile)
       .output(write)
       .format("ogg")
@@ -13,9 +13,10 @@ export const transcodeToTheora: Transcoder = async (options) => {
       .aspect("16:9")
       .size("720x?")
       .autopad(true)
-      .on("progress", (progress) => onProgress(progress.percent))
-      .on("end", () => resolve())
-      .on("error", (e) => reject(e))
-      .run()
+
+    theora.on("progress", (progress) => onProgress(progress.percent))
+    theora.on("end", () => resolve())
+    theora.on("error", (e) => reject(e))
+    theora.run()
   })
 }

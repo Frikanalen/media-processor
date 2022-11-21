@@ -5,7 +5,7 @@ export const transcodeToWebM: Transcoder = async (options) => {
   const { pathToFile, write, onProgress } = options
 
   return new Promise((resolve, reject) => {
-    ffmpeg()
+    const webm = ffmpeg()
       .input(pathToFile)
       .output(write)
       .format("webm")
@@ -16,9 +16,11 @@ export const transcodeToWebM: Transcoder = async (options) => {
       .keepDAR()
       .size("1920x1080")
       .autopad(true)
-      .on("progress", (progress) => onProgress(progress.percent))
-      .on("end", () => resolve())
-      .on("error", (e) => reject(e))
-      .run()
+
+    webm.on("progress", (progress) => onProgress(progress.percent))
+    webm.on("end", () => resolve())
+    webm.on("error", (e) => reject(e))
+
+    webm.run()
   })
 }
