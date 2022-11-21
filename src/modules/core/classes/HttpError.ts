@@ -31,7 +31,7 @@ export class HttpError extends Error {
   ) {
     super()
 
-    this.details = typeof details === "string" ? { code: details } : details
+    this.details = typeof details === "string" ? { code: details } : details!
     this.reason = customReason || reasonToCodeMap[code]
   }
 }

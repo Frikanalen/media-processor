@@ -1,11 +1,11 @@
-import Router from "@koa/router"
-import { setTusHeaders } from "../middleware/setTusHeaders"
-import { createUpload } from "../middleware/createUpload"
-import { getUpload } from "../middleware/getUpload"
-import { sendUpload } from "../middleware/sendUpload"
-import { patchUpload } from "../middleware/patchUpload"
-import { Middleware } from "koa"
-import { authenticate } from "../../auth/middleware/authenticate"
+import type Router from "@koa/router"
+import { setTusHeaders } from "../middleware/setTusHeaders.js"
+import { createUpload } from "../middleware/createUpload.js"
+import { getUpload } from "../middleware/getUpload.js"
+import { sendUpload } from "../middleware/sendUpload.js"
+import { patchUpload } from "../middleware/patchUpload.js"
+import type { Middleware } from "koa"
+import { authenticate } from "../../auth/middleware/authenticate.js"
 
 export type Options = {
   type: string

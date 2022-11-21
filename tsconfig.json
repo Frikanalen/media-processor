@@ -1,13 +1,7 @@
 {
+  "extends": "@tsconfig/node18-strictest-esm/tsconfig.json",
   "compilerOptions": {
-    "resolveJsonModule": true,
-    "moduleResolution": "node",
-    "esModuleInterop": true,
     "sourceMap": true,
-    "skipLibCheck": true,
-    "target": "ESNext",
-    "module": "commonjs",
-    "strict": true,
     "outDir": "build"
   },
   "include": ["src", "typedefs"],

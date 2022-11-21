@@ -1,5 +1,5 @@
-import { Middleware } from "koa"
-import { HttpError } from "../classes/HttpError"
+import type { Middleware } from "koa"
+import { HttpError } from "../classes/HttpError.js"
 import * as Yup from "yup"
 
 export const handleError = (): Middleware => async (context, next) => {
@@ -38,3 +38,5 @@ export const handleError = (): Middleware => async (context, next) => {
     return
   }
 }
+
+export default handleError

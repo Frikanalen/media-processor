@@ -1,4 +1,4 @@
-import { Locator, Provider } from "../types"
+import type { Locator, Provider } from "../types.js"
 
 export const getLocator = (
   provider: Provider,

@@ -1,11 +1,10 @@
-import { Middleware } from "koa"
-import { AnySchema } from "yup"
+import type { Middleware } from "koa"
+import type { AnySchema } from "yup"
 
 export const validateSchema =
   (schema: AnySchema): Middleware =>
   async (context, next) => {
-    const data = await schema.validate(context.request.body)
-    context.state.validated = data
+    context.state["validated"] = await schema.validate(context.request.body)
 
     return next()
   }

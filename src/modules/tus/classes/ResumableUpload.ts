@@ -1,11 +1,11 @@
 import { open, close, createWriteStream, unlink, stat } from "fs"
 import { promisify } from "util"
 import { randomBytes } from "crypto"
-import { Readable } from "stream"
-import { HttpError } from "../../core/classes/HttpError"
-import { ResumableUploadData } from "../types/ResumableUploadData"
-import { resumableUploadNamespace } from "../namespaces/resumableUploadNamespace"
-import { TEMP_UPLOAD_FOLDER } from "../../core/constants"
+import type { Readable } from "stream"
+import { HttpError } from "../../core/classes/HttpError.js"
+import type { ResumableUploadData } from "../types/ResumableUploadData.js"
+import { resumableUploadNamespace } from "../namespaces/resumableUploadNamespace.js"
+import { TEMP_UPLOAD_FOLDER } from "../../core/constants.js"
 
 const openAsync = promisify(open)
 const closeAsync = promisify(close)

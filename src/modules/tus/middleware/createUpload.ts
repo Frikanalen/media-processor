@@ -1,12 +1,12 @@
-import { Middleware } from "koa"
-import { TUS_MAX_SIZE_DEFAULT } from "../constants"
-import { HttpError } from "../../core/classes/HttpError"
-import { ResumableUpload } from "../classes/ResumableUpload"
-import { parseMetadata } from "../helpers/parseMetadata"
-import { AuthState } from "../../auth/middleware/authenticate"
+import type { Middleware } from "koa"
+import { TUS_MAX_SIZE_DEFAULT } from "../constants.js"
+import { HttpError } from "../../core/classes/HttpError.js"
+import { ResumableUpload } from "../classes/ResumableUpload.js"
+import { parseMetadata } from "../helpers/parseMetadata.js"
+import type { AuthState } from "../../auth/middleware/authenticate.js"
 
 export type CreateUploadOptions = {
-  maxSize?: number
+  maxSize: number | undefined
   type?: string
 }
 

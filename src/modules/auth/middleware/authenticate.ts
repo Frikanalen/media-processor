@@ -1,7 +1,7 @@
-import { Middleware } from "koa"
-import { HttpError } from "../../core/classes/HttpError"
+import type { Middleware } from "koa"
+import { HttpError } from "../../core/classes/HttpError.js"
 import axios from "axios"
-import { FK_API, FK_API_KEY, SECRET_KEY_HEADER } from "../../core/constants"
+import { FK_API, FK_API_KEY, SECRET_KEY_HEADER } from "../../core/constants.js"
 
 export type AuthUser = {
   id: number

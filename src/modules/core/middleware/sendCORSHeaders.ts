@@ -1,5 +1,5 @@
-import { Middleware } from "koa"
-import { IS_PROD } from "../constants"
+import type { Middleware } from "koa"
+import { IS_PROD } from "../constants.js"
 
 export const sendCORSHeaders = (): Middleware => (context, next) => {
   const { method } = context

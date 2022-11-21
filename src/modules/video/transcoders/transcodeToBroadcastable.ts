@@ -1,5 +1,5 @@
 import ffmpeg from "fluent-ffmpeg"
-import { Transcoder } from "../../transcoding/types"
+import type { Transcoder } from "../../transcoding/types.js"
 
 export const transcodeToBroadcastable: Transcoder = async (options) => {
   const { pathToFile, write, onProgress } = options

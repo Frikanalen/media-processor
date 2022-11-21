@@ -1,7 +1,7 @@
-import { Middleware } from "koa"
-import { ResumableUpload } from "../classes/ResumableUpload"
-import { HttpError } from "../../core/classes/HttpError"
-import { AuthState } from "../../auth/middleware/authenticate"
+import type { Middleware } from "koa"
+import { ResumableUpload } from "../classes/ResumableUpload.js"
+import { HttpError } from "../../core/classes/HttpError.js"
+import type { AuthState } from "../../auth/middleware/authenticate.js"
 
 export type GetUploadState = AuthState & {
   upload: ResumableUpload
@@ -11,7 +11,7 @@ export const getUpload =
   (type: string): Middleware<GetUploadState> =>
   async (context, next) => {
     const { user } = context.state
-    const { key } = context.params
+    const { key } = context["params"]
 
     if (!key) throw new HttpError(400, 'Must supply "key"')
 

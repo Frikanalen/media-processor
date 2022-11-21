@@ -1,16 +1,18 @@
-import "dotenv/config"
-import { redis } from "./modules/redis/redis"
+import { redis } from "./modules/redis/redis.js"
 import Koa from "koa"
 import bodyParser from "koa-bodyparser"
-import { logRequest } from "./modules/core/middleware/logRequest"
-import { handleError } from "./modules/core/middleware/handleError"
-import { sendCORSHeaders } from "./modules/core/middleware/sendCORSHeaders"
-import { videoRouter } from "./modules/video/router"
-import { log } from "./modules/core/log"
-import { FK_API, FK_API_KEY, SECRET_KEY_HEADER } from "./modules/core/constants"
-
+import { logRequest } from "./modules/core/middleware/logRequest.js"
+import { handleError } from "./modules/core/middleware/handleError.js"
+import { sendCORSHeaders } from "./modules/core/middleware/sendCORSHeaders.js"
+import { videoRouter } from "./modules/video/router.js"
+import { log } from "./modules/core/log.js"
+import {
+  FK_API,
+  FK_API_KEY,
+  SECRET_KEY_HEADER,
+} from "./modules/core/constants.js"
 import { OpenAPI } from "./client"
-import { statusUpdate } from "./modules/status/router"
+import { statusUpdate } from "./modules/status/router.js"
 
 OpenAPI.BASE = FK_API
 
@@ -20,7 +22,7 @@ OpenAPI.HEADERS = async (r) => {
     "X-CSRF-Token": r?.cookies?.["fk-csrf"] ?? "",
   }
 }
-const port = Number(process.env.PORT) || 8001
+const port = Number(process.env["PORT"]) || 8001
 
 const app = new Koa()
 

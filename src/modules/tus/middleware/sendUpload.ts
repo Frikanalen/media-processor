@@ -1,5 +1,5 @@
-import { ResumableUpload } from "../classes/ResumableUpload"
-import { Middleware } from "koa"
+import type { ResumableUpload } from "../classes/ResumableUpload.js"
+import type { Middleware } from "koa"
 
 export type SendUploadState = {
   upload: ResumableUpload

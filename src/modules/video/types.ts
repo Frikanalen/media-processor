@@ -1,6 +1,6 @@
-import { Job } from "bull"
-import { VideoDescriptorName } from "./helpers/getVideoDescriptors"
-import { VideoMetadata } from "./helpers/getVideoMetadata"
+import type { Job } from "bull"
+import type { VideoDescriptorName } from "./helpers/getVideoDescriptors"
+import type { VideoMetadata } from "./helpers/getVideoMetadata"
 
 export type VideoJobData = {
   key: string

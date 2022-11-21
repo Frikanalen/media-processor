@@ -1,6 +1,6 @@
 import { PassThrough } from "stream"
-import { s3Client } from "../../s3/client"
-import { Locator, Provider } from "../types"
+import { s3Client } from "../../s3/client.js"
+import type { Locator, Provider } from "../types.js"
 
 export const getStorageWriteStream = (
   locator: Locator,

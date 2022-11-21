@@ -3,12 +3,9 @@ export const parseMetadata = (metadata: string): Record<string, string> => {
   const rows = metadata.split(",")
 
   for (const row of rows) {
-    const pair = row.split(" ")
+    const [key, rawValue] = row.split(" ") as [string, string]
 
-    const key = pair[0]
-    const value = Buffer.from(pair[1], "base64").toString("ascii")
-
-    result[key] = value
+    result[key] = Buffer.from(rawValue, "base64").toString("ascii")
   }
 
   return result

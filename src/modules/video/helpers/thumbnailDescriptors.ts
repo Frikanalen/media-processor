@@ -1,5 +1,5 @@
-import { transcodeToWebP } from "../../image/transcoders/transcodeToWebP"
-import { TranscoderDescriptor } from "../../transcoding/types"
+import { transcodeToWebP } from "../../image/transcoders/transcodeToWebP.js"
+import type { TranscoderDescriptor } from "../../transcoding/types.js"
 
 type WebPDescriptor<N extends string> = TranscoderDescriptor<
   N,
@@ -11,7 +11,7 @@ export type ThumbnailDescriptor<N extends string> = WebPDescriptor<N> & {
   height: number
 }
 
-const desiredDimensions = {
+const desiredDimensions: Record<string, [number, number]> = {
   large: [1280, 720],
   medium: [852, 480],
   small: [360, 640],

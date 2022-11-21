@@ -1,11 +1,11 @@
-import { redis } from "../redis"
+import { redis } from "../redis.js"
 
 export class Namespace<T extends object> {
   constructor(private prefix: string) {}
 
   public set(key: string, value: T, duration?: number) {
     return redis.set(this.getKey(key), JSON.stringify(value), {
-      EX: duration,
+      EX: duration!,
     })
   }
 
@@ -15,6 +15,8 @@ export class Namespace<T extends object> {
     if (value) {
       return JSON.parse(value) as T
     }
+
+    return null
   }
 
   public delete(key: string) {

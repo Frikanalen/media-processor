@@ -1,6 +1,6 @@
-import { Middleware } from "koa"
-import { HttpError } from "../../core/classes/HttpError"
-import { FK_API_KEY, SECRET_KEY_HEADER } from "../../core/constants"
+import type { Middleware } from "koa"
+import { HttpError } from "../../core/classes/HttpError.js"
+import { FK_API_KEY, SECRET_KEY_HEADER } from "../../core/constants.js"
 
 export const requireSecretKey = (): Middleware => (context, next) => {
   const key = context.get(SECRET_KEY_HEADER)

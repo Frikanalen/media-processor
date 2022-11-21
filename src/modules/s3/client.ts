@@ -1,6 +1,6 @@
 import { S3 } from "@aws-sdk/client-s3"
 import { AWS_ENDPOINT } from "./constants"
-const AWS = require("aws-sdk")
+import AWS from "aws-sdk"
 
 const credentials = new AWS.EnvironmentCredentials("AWS")
 

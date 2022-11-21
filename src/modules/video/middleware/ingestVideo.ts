@@ -1,16 +1,16 @@
 import { createReadStream } from "fs"
-import { Middleware } from "koa"
-import { HttpError } from "../../core/classes/HttpError"
-import { getLocator } from "../../media/helpers/getLocator"
-import { PatchUploadState } from "../../tus/middleware/patchUpload"
-import { makeVideoKey } from "../helpers/makeVideoKey"
-import { getVideoMetadata } from "../helpers/getVideoMetadata"
-import { videoQueue } from "../queue"
-import { FK_API_KEY } from "../../core/constants"
+import type { Middleware } from "koa"
+import { HttpError } from "../../core/classes/HttpError.js"
+import { getLocator } from "../../media/helpers/getLocator.js"
+import type { PatchUploadState } from "../../tus/middleware/patchUpload.js"
+import { makeVideoKey } from "../helpers/makeVideoKey.js"
+import { getVideoMetadata } from "../helpers/getVideoMetadata.js"
+import { videoQueue } from "../queue.js"
+import { FK_API_KEY } from "../../core/constants.js"
 import { MediaService } from "../../../client"
-import { log } from "../../core/log"
+import { log } from "../../core/log.js"
 import { Upload } from "@aws-sdk/lib-storage"
-import { s3Client } from "../../s3/client"
+import { s3Client } from "../../s3/client.js"
 
 const getMetadataOrThrow400 = async (path: string) => {
   try {
@@ -36,7 +36,7 @@ export const ingestVideo =
     const duration = metadata.probed.format.duration!
 
     const Body = createReadStream(upload.path)
-    const Bucket = "videos"
+    const Bucket = "media"
     const Key = makeVideoKey()
 
     log.info(`Copying file to S3 as ${Bucket}/${Key}`)

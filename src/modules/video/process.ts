@@ -1,13 +1,13 @@
 import { unlink } from "fs/promises"
-import { getLocator } from "../media/helpers/getLocator"
-import { getStorageWriteStream } from "../media/helpers/getStorageWriteStream"
+import { getLocator } from "../media/helpers/getLocator.js"
+import { getStorageWriteStream } from "../media/helpers/getStorageWriteStream.js"
 import { grabStill } from "./helpers/grabStill"
 import { getVideoDescriptors } from "./helpers/getVideoDescriptors"
 import { desiredThumbnails } from "./helpers/thumbnailDescriptors"
-import { VideoJob } from "./types"
-import { log } from "../core/log"
+import type { VideoJob } from "./types"
+import { log } from "../core/log.js"
 import { MediaService } from "../../client"
-import { FK_API_KEY } from "../core/constants"
+import { FK_API_KEY } from "../core/constants.js"
 
 export const process = async (job: VideoJob) => {
   const { key, pathToVideo, mediaId } = job.data
@@ -20,6 +20,7 @@ export const process = async (job: VideoJob) => {
   // Create thumbnail assets
   for (const target of desiredThumbnails()) {
     const { name, transcode, mime, width, height } = target
+    log.info(`Generating thumbnail ${name}`)
 
     const locator = getLocator("S3", "media", key, name)
     const writeStream = getStorageWriteStream(locator, mime)

@@ -1,10 +1,10 @@
-FROM jrottenberg/ffmpeg:4.4-nvidia as ffmpeg-base
+FROM jrottenberg/ffmpeg:4.4-ubuntu2004 as ffmpeg-base
 
-# To get apt to a working state we first have to delete the old nVidia CUDA key and apply the new one
-RUN apt-key del 7fa2af80
-RUN apt-get -o Acquire::AllowInsecureRepositories=true -o Acquire::AllowDowngradeToInsecureRepositories=true update
-RUN apt-get -o APT::Get::AllowUnauthenticated=true install cuda-keyring
-RUN rm /etc/apt/sources.list.d/cuda.list
+## To get apt to a working state we first have to delete the old nVidia CUDA key and apply the new one
+#RUN apt-key del 7fa2af80
+#RUN apt-get -o Acquire::AllowInsecureRepositories=true -o Acquire::AllowDowngradeToInsecureRepositories=true update
+#RUN apt-get -o APT::Get::AllowUnauthenticated=true install cuda-keyring
+#RUN rm /etc/apt/sources.list.d/cuda.list
 
 RUN apt-get update && apt-get install -y curl
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
@@ -19,6 +19,9 @@ WORKDIR /app
 COPY package.json yarn.lock /app/
 
 RUN yarn --quiet
+#Right now we skip this step until I figure out how to get openapi to emit a file that doesn't
+#require manual patching
+#RUN yarn generate
 
 FROM deps as builder
 
@@ -27,15 +30,13 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./
 COPY . .
 
-RUN yarn generate
 RUN yarn build
 
-FROM ffmpeg-base
+FROM builder
+
 WORKDIR /app
 
-COPY . .
-COPY --from=builder /app/build build/
-COPY --from=deps /app/node_modules node_modules/
+RUN mkdir /app/tmp-upload
 
 ENTRYPOINT ["/usr/bin/yarn"]
 

@@ -1,4 +1,4 @@
-import { Transcoder } from "../../transcoding/types"
+import type { Transcoder } from "../../transcoding/types.js"
 import sharp from "sharp"
 import { pipeline } from "stream/promises"
 

@@ -1,7 +1,7 @@
-import { TranscoderDescriptor } from "../../transcoding/types"
-import { transcodeToBroadcastable } from "../transcoders/transcodeToBroadcastable"
-import { transcodeToTheora } from "../transcoders/transcodeToTheora"
-import { transcodeToWebM } from "../transcoders/transcodeToWebM"
+import type { TranscoderDescriptor } from "../../transcoding/types.js"
+import { transcodeToBroadcastable } from "../transcoders/transcodeToBroadcastable.js"
+import { transcodeToTheora } from "../transcoders/transcodeToTheora.js"
+import { transcodeToWebM } from "../transcoders/transcodeToWebM.js"
 
 type TheoraDescriptor = TranscoderDescriptor<"theora", typeof transcodeToTheora>
 type BroadcastableDescriptor = TranscoderDescriptor<

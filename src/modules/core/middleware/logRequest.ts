@@ -1,4 +1,4 @@
-import { Middleware } from "koa"
+import type { Middleware } from "koa"
 import chalk from "chalk"
 
 const methodToColorMap: Record<string, typeof chalk.Color> = {
