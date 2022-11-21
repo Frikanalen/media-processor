@@ -36,7 +36,7 @@ FROM builder
 
 WORKDIR /app
 
-RUN mkdir /app/tmp-upload
+RUN mkdir -p /app/tmp-upload
 
 ENTRYPOINT ["/usr/bin/yarn"]
 
