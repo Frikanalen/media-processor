@@ -17,7 +17,7 @@ An entry is then created in the database using the Frikanalen API.
 # Internal API key
 FK_API_KEY=1234
 # Location of Frikanalen API
-FK_API=http://localhost:8000
+FK_API=http://localhost:8080
 # AWS settings (these are s3-ninja defaults)
 AWS_ENDPOINT=http://localhost:9000
 AWS_REGION=no-where-1
