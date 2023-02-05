@@ -19,7 +19,8 @@ FK_API_KEY=1234
 # Location of Frikanalen API
 FK_API=http://localhost:8080
 # AWS settings (these are s3-ninja defaults)
-AWS_ENDPOINT=http://localhost:9000
+BUCKET_HOST=localhost
+BUCKET_PORT=9000
 AWS_REGION=no-where-1
 AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
 AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
