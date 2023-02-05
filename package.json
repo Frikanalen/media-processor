@@ -1,8 +1,11 @@
 {
   "name": "media-processor",
   "version": "1.0.0",
-  "main": "src/main.js",
   "license": "MIT",
+  "exports": "./src/server.ts",
+  "engines": {
+    "node": ">=16"
+  },
   "type": "module",
   "scripts": {
     "view:coverage": "serve coverage/lcov-report",
@@ -21,7 +24,6 @@
     "@aws-sdk/client-s3": "^3.213.0",
     "@aws-sdk/lib-storage": "^3.213.0",
     "@koa/router": "^12.0.0",
-    "@types/fluent-ffmpeg": "^2.1.17",
     "aws-sdk": "^2.1258.0",
     "axios": "^1.1.3",
     "bull": "^4.10.1",
@@ -39,24 +41,25 @@
     "serve": "^14.1.2",
     "sharp": "^0.31.2",
     "small-uuid": "^1.0.1",
-    "ts-node": "^10.9.1",
     "tslog": "^4.2.0",
-    "typescript": "4.9.3",
     "yup": "^0.32.11"
   },
   "devDependencies": {
     "@tsconfig/node18-strictest-esm": "^1.0.1",
     "@types/bull": "^4.10.0",
+    "@types/fluent-ffmpeg": "^2.1.17",
     "@types/koa": "^2.13.5",
     "@types/koa-bodyparser": "^4.3.10",
     "@types/koa__router": "^12.0.0",
     "@types/node": "^18.11.9",
     "@types/sharp": "^0.31.0",
+    "nodemon": "^2.0.20",
     "onchange": "^7.1.0",
     "openapi": "^1.0.1",
     "openapi-typescript-codegen": "^0.23.0",
     "prettier": "^2.7.1",
-    "ts-node-dev": "^2.0.0"
+    "ts-node": "^10.9.1",
+    "typescript": "4.9.5"
   },
   "repository": "git@github.com:Frikanalen/media-processor.git",
   "author": "Tore Sinding Bekkedal <toresbe@protonmail.com>"
