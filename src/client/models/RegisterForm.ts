@@ -3,8 +3,7 @@
 /* eslint-disable */
 
 export type RegisterForm = {
-    email: string;
-    password: string;
-    name: string;
-};
-
+  email: string
+  password: string
+  name: string
+}

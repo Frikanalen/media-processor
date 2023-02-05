@@ -2,12 +2,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Category } from './Category';
+import type { Category } from "./Category"
 
 export type Config = {
-    servers?: {
-        media?: string;
-    };
-    categories?: Array<Category>;
-};
-
+  servers?: {
+    media?: string
+  }
+  categories?: Array<Category>
+}

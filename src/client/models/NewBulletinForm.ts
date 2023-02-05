@@ -3,7 +3,6 @@
 /* eslint-disable */
 
 export type NewBulletinForm = {
-    title: string;
-    text: string;
-};
-
+  title: string
+  text: string
+}

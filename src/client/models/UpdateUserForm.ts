@@ -3,6 +3,5 @@
 /* eslint-disable */
 
 export type UpdateUserForm = {
-    name: string;
-};
-
+  name: string
+}

@@ -3,8 +3,7 @@
 /* eslint-disable */
 
 export type NewPlaylistForm = {
-    title: string;
-    description: string;
-    videos: Array<number>;
-};
-
+  title: string
+  description: string
+  videos: Array<number>
+}

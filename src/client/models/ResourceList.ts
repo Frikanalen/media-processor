@@ -3,9 +3,8 @@
 /* eslint-disable */
 
 export type ResourceList = {
-    rows?: Array<any>;
-    offset?: number;
-    limit?: number;
-    count?: number;
-};
-
+  rows?: Array<any>
+  offset?: number
+  limit?: number
+  count?: number
+}

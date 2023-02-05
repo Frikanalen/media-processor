@@ -18,7 +18,6 @@ export type OpenAPIConfig = {
   ENCODE_PATH?: (path: string) => string
 }
 
-// @ts-ignore
 export const OpenAPI: OpenAPIConfig = {
   BASE: "https://beta.frikanalen.no/api/v2",
   VERSION: "2.0.0",

@@ -3,8 +3,7 @@
 /* eslint-disable */
 
 export type VideoMediaAssetForm = {
-    locator: string;
-    type: string;
-    metadata?: any;
-};
-
+  locator: string
+  type: string
+  metadata?: any
+}

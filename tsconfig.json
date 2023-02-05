@@ -1,8 +1,14 @@
 {
   "extends": "@tsconfig/node18-strictest-esm/tsconfig.json",
   "compilerOptions": {
+    "exactOptionalPropertyTypes": false,
+    "esModuleInterop": true,
     "sourceMap": true,
     "outDir": "build"
+  },
+  "ts-node": {
+    "esm": true,
+    "experimentalSpecifierResolution": "node"
   },
   "include": ["src", "typedefs"],
   "exclude": ["node_modules"]

@@ -3,10 +3,9 @@
 /* eslint-disable */
 
 export type Bulletin = {
-    id?: number;
-    title?: string;
-    text?: string;
-    createdAt?: string;
-    updatedAt?: string;
-};
-
+  id?: number
+  title?: string
+  text?: string
+  createdAt?: string
+  updatedAt?: string
+}

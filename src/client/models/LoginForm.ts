@@ -3,7 +3,6 @@
 /* eslint-disable */
 
 export type LoginForm = {
-    email: string;
-    password: string;
-};
-
+  email: string
+  password: string
+}
