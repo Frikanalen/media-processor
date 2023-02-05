@@ -1,13 +1,13 @@
 import ffmpeg from "fluent-ffmpeg"
-import type { Transcoder } from "../../transcoding/types.js"
+import type { Transcoder } from "../transcoding/types"
 
 export const transcodeToBroadcastable: Transcoder = async (options) => {
-  const { pathToFile, write, onProgress } = options
+  const { inputPath, outputPath, onProgress } = options
 
   return new Promise((resolve, reject) => {
     const broadcast = ffmpeg()
-      .input(pathToFile)
-      .output(write)
+      .input(inputPath)
+      .output(outputPath)
       .format("mxf")
       .videoCodec("libx264")
       .outputOption("-crf 18")

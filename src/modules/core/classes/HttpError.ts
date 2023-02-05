@@ -18,7 +18,7 @@ export const reasonToCodeMap: Record<HttpStatus, string> = {
   "500": "Internal Server Error",
 }
 
-export type HttpStatus = typeof statusCodes[keyof typeof statusCodes]
+export type HttpStatus = (typeof statusCodes)[keyof typeof statusCodes]
 
 export class HttpError extends Error {
   public reason: string

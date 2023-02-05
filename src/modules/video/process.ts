@@ -26,15 +26,13 @@ export const process = async (job: VideoJob) => {
 
     log.info(`Generating thumbnail ${name}`)
 
-    const writeStream = await fs.createWriteStream(tempFileName)
     await transcode({
       onProgress: (progress) => {
         log.debug(`${progress}%`)
       },
-      pathToFile: pathToStill,
-      write: writeStream,
+      inputPath: pathToStill,
+      outputPath: tempFileName,
     })
-    await writeStream.close()
 
     await s3Client.putObject({
       Bucket: bucket,
@@ -70,14 +68,11 @@ export const process = async (job: VideoJob) => {
       const tempFileName = `tmp-upload/${job.id}_${name}`
       log.info(`Generating asset ${name}`)
 
-      const writeStream = await fs.createWriteStream(tempFileName)
-
       await transcode({
         onProgress: handleProgress,
-        pathToFile: pathToVideo,
-        write: writeStream,
+        inputPath: pathToVideo,
+        outputPath: tempFileName,
       })
-      await writeStream.close()
 
       await s3Client.putObject({
         Bucket: bucket,
@@ -100,7 +95,7 @@ export const process = async (job: VideoJob) => {
     }
   )
 
-  await Promise.allSettled(transcodingProcesses)
+  console.log(await Promise.allSettled(transcodingProcesses))
 
   log.info(`Processing finished for mediaId ${mediaId}, cleaning up`)
 

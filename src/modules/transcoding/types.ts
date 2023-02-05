@@ -1,8 +1,6 @@
-import type { Writable } from "stream"
-
 export type TranscoderOptions = {
-  pathToFile: string
-  write: Writable
+  inputPath: string
+  outputPath: string
   onProgress: (value: number) => void
 }
 
