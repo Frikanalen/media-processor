@@ -4,6 +4,7 @@ import { HttpError } from "../../core/classes/HttpError.js"
 import { ResumableUpload } from "../classes/ResumableUpload.js"
 import { parseMetadata } from "../helpers/parseMetadata.js"
 import type { AuthState } from "../../auth/middleware/authenticate.js"
+import { log } from "../../core/log"
 
 export type CreateUploadOptions = {
   maxSize: number | undefined
@@ -36,6 +37,9 @@ export const createUpload =
 
     const { filename = "unnamed", ...rest } = metadata
 
+    log.info(
+      `Got ${(length / 1024 / 1024).toFixed(2)}MiB upload from ${user.id}`
+    )
     const upload = await ResumableUpload.create({
       user: user.id,
       metadata: rest,

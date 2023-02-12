@@ -6,6 +6,7 @@ import { sendUpload } from "../middleware/sendUpload.js"
 import { patchUpload } from "../middleware/patchUpload.js"
 import type { Middleware } from "koa"
 import { authenticate } from "../../auth/middleware/authenticate.js"
+import { log } from "../../core/log"
 
 export type Options = {
   type: string
@@ -38,6 +39,10 @@ export const getTusReceiver = (router: Router, options: Options) => {
     authenticate({ required: true }),
     getUpload(type),
     patchUpload(),
+    (_, next) => {
+      log.info("Upload complete")
+      return next()
+    },
     ...onComplete
   )
 
