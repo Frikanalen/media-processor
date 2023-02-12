@@ -22,26 +22,27 @@ export const process = async (job: VideoJob) => {
   // Create thumbnail assets
   for (const target of desiredThumbnails()) {
     const { name, transcode, mime, width, height } = target
-    const tempFileName = `tmp-upload/${job.id}_${name}`
+    const outputDir = `tmp-upload/${job.id}_${name}`
+    fs.mkdirSync(outputDir)
 
     log.info(`Generating thumbnail ${name}`)
 
-    await transcode({
+    const result = await transcode({
       onProgress: (progress) => {
         log.debug(`${progress}%`)
       },
       inputPath: pathToStill,
-      outputPath: tempFileName,
+      outputDir,
     })
 
     await s3Client.putObject({
       Bucket: bucket,
       Key: `${key}/${name}`,
-      Body: await fs.createReadStream(tempFileName),
+      Body: await fs.createReadStream(result.asset.path),
       ContentType: mime,
     })
 
-    await fs.unlinkSync(tempFileName)
+    await fs.rmSync(outputDir, { recursive: true })
 
     await MediaService.postVideosMediaAssets(mediaId, FK_API_KEY, {
       type: name,
@@ -65,29 +66,58 @@ export const process = async (job: VideoJob) => {
   // Map all transcoding jobs into a concurrent list of promises
   const transcodingProcesses = pendingAssets.map(
     async ({ name, transcode, mime }) => {
-      const tempFileName = `tmp-upload/${job.id}_${name}`
+      const tempDir = `tmp-upload/${job.id}_${name}`
+
+      fs.mkdirSync(tempDir)
+
       log.info(`Generating asset ${name}`)
 
-      await transcode({
+      const { asset, streams } = await transcode({
         onProgress: handleProgress,
         inputPath: pathToVideo,
-        outputPath: tempFileName,
+        outputDir: tempDir,
       })
 
-      await s3Client.putObject({
-        Bucket: bucket,
-        Key: `${key}/${name}`,
-        Body: await fs.createReadStream(tempFileName),
-        ContentType: mime,
-      })
+      if (streams) {
+        await s3Client.putObject({
+          Bucket: bucket,
+          Key: `${key}/hls/manifest.m3u8`,
+          Body: await fs.createReadStream(asset.path),
+          ContentType: mime,
+        })
+        const substreams = Object.values(streams)
+          .map((segments) =>
+            segments.map(async (segment) =>
+              s3Client.putObject({
+                Bucket: bucket,
+                Key: `${key}/${name}/${segment}`,
+                Body: await fs.createReadStream(`${tempDir}/${segment}`),
+                ContentType: mime,
+              })
+            )
+          )
+          .flat()
+        await MediaService.postVideosMediaAssets(mediaId, FK_API_KEY, {
+          type: name,
+          metadata: {},
+          locator: getLocator("S3", "media", key, "hls/manifest.m3u8"),
+        })
+        console.log(Promise.allSettled(substreams))
+      } else {
+        await s3Client.putObject({
+          Bucket: bucket,
+          Key: `${key}/${name}`,
+          Body: await fs.createReadStream(asset.path),
+          ContentType: mime,
+        })
+        await MediaService.postVideosMediaAssets(mediaId, FK_API_KEY, {
+          type: name,
+          metadata: {},
+          locator: getLocator("S3", "media", key, name),
+        })
+      }
 
-      await fs.unlinkSync(tempFileName)
-
-      await MediaService.postVideosMediaAssets(mediaId, FK_API_KEY, {
-        type: name,
-        metadata: {},
-        locator: getLocator("S3", "media", key, name),
-      })
+      fs.rmSync(tempDir, { recursive: true })
 
       finished.push(name)
 
@@ -115,7 +145,7 @@ const makeStill = async (job: VideoJob) => {
   const seek = Math.floor((duration ?? 0) * 0.25)
 
   const pathToStill = await grabStill(pathToVideo, seek)
-
+  console.log("done", pathToStill)
   await job.update({ ...job.data, pathToStill })
 
   return pathToStill

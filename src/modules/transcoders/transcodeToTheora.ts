@@ -2,7 +2,8 @@ import ffmpeg from "fluent-ffmpeg"
 import type { Transcoder } from "../transcoding/types"
 
 export const transcodeToTheora: Transcoder = async (options) => {
-  const { inputPath, outputPath, onProgress } = options
+  const { inputPath, outputDir, onProgress } = options
+  const outputPath = `${outputDir}/theora.ogv`
 
   return new Promise((resolve, reject) => {
     const theora = ffmpeg()
@@ -15,7 +16,7 @@ export const transcodeToTheora: Transcoder = async (options) => {
       .autopad(true)
 
     theora.on("progress", (progress) => onProgress(progress.percent))
-    theora.on("end", () => resolve())
+    theora.on("end", () => resolve({ asset: { path: outputPath } }))
     theora.on("error", (e) => reject(e))
     theora.run()
   })

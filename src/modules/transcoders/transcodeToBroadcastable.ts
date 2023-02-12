@@ -2,7 +2,8 @@ import ffmpeg from "fluent-ffmpeg"
 import type { Transcoder } from "../transcoding/types"
 
 export const transcodeToBroadcastable: Transcoder = async (options) => {
-  const { inputPath, outputPath, onProgress } = options
+  const { inputPath, outputDir, onProgress } = options
+  const outputPath = `${outputDir}/broadcast.mxf`
 
   return new Promise((resolve, reject) => {
     const broadcast = ffmpeg()
@@ -20,7 +21,7 @@ export const transcodeToBroadcastable: Transcoder = async (options) => {
       .autopad(true)
 
     broadcast.on("progress", (progress) => onProgress(progress.percent))
-    broadcast.on("end", () => resolve())
+    broadcast.on("end", () => resolve({ asset: { path: outputPath } }))
     broadcast.on("error", (e) => reject(e))
     broadcast.run()
   })

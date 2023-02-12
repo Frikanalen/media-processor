@@ -2,6 +2,7 @@ import type { TranscoderDescriptor } from "../../transcoding/types.js"
 import { transcodeToBroadcastable } from "../../transcoders/transcodeToBroadcastable.js"
 import { transcodeToTheora } from "../../transcoders/transcodeToTheora.js"
 import { transcodeToWebM } from "../../transcoders/transcodeToWebM.js"
+import { transcodeToHLS } from "../../transcoders/transcodeToHLS"
 
 type TheoraDescriptor = TranscoderDescriptor<"theora", typeof transcodeToTheora>
 type BroadcastableDescriptor = TranscoderDescriptor<
@@ -11,10 +12,13 @@ type BroadcastableDescriptor = TranscoderDescriptor<
 
 type WebMDescriptor = TranscoderDescriptor<"webm", typeof transcodeToWebM>
 
+type HLSDescriptor = TranscoderDescriptor<"hls", typeof transcodeToHLS>
+
 export type VideoDescriptor =
   | TheoraDescriptor
   | BroadcastableDescriptor
   | WebMDescriptor
+  | HLSDescriptor
 
 export const getVideoDescriptors = (): VideoDescriptor[] => {
   return [
@@ -32,6 +36,11 @@ export const getVideoDescriptors = (): VideoDescriptor[] => {
       name: "webm",
       mime: "video/webm",
       transcode: transcodeToWebM,
+    },
+    {
+      name: "hls",
+      mime: "application/vnd.apple.mpegurl",
+      transcode: transcodeToHLS,
     },
   ]
 }
