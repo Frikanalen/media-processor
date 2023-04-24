@@ -22,7 +22,9 @@ export const transcodeToWebM: Transcoder = async (options) => {
       .autopad(true)
 
     webm.on("progress", (progress) => onProgress(progress.percent))
-    webm.on("end", () => resolve({ asset: { path: outputPath } }))
+    webm.on("end", () =>
+      resolve({ asset: { path: outputPath, mime: "video/webm" } })
+    )
     webm.on("error", (e) => reject(e))
 
     webm.run()

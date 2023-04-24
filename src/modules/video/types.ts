@@ -1,14 +1,15 @@
 import type { Job } from "bull"
-import type { VideoDescriptorName } from "./helpers/getVideoDescriptors"
-import type { VideoMetadata } from "./helpers/getVideoMetadata"
+import type { VideoTranscoders } from "./helpers/getVideoDescriptors"
+import type { VideoMetadataV2 } from "./helpers/getVideoMetadata"
 
 export type VideoJobData = {
   key: string
   pathToVideo: string
   pathToStill?: string
-  metadata: VideoMetadata
+  metadata: VideoMetadataV2
   mediaId: number
-  finished?: VideoDescriptorName[]
+  finished?: VideoTranscoders[]
+  error?: string
 }
 
 export type VideoJob = Job<VideoJobData>

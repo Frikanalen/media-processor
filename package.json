@@ -37,6 +37,7 @@
     "koa-bodyparser": "^4.3.0",
     "koa-event-stream": "^1.0.3",
     "mime-types": "^2.1.35",
+    "prom-client": "^14.2.0",
     "redis": "^4.5.0",
     "serve": "^14.1.2",
     "sharp": "^0.31.2",

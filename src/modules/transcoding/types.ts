@@ -4,26 +4,16 @@ export type TranscoderOptions = {
   onProgress: (value: number) => void
 }
 
-export type TranscoderResult = {
-  asset: {
-    // Primary media asset filespec - in case of segmented, it's the primary manifest
-    // as delivered to the client
-    path: string
-  }
-  streams?: { [k: string]: string[] }
-}
-
-export type Transcoder = (
-  options: TranscoderOptions
-) => Promise<TranscoderResult>
-
-export type BaseTranscoderDescriptor<N extends string, T extends Transcoder> = {
-  name: N
+export type TranscoderOutputFile = {
+  path: string
   mime: string
-  transcode: T
 }
 
-export type TranscoderDescriptor<
-  N extends string = "",
-  T extends Transcoder = Transcoder
-> = BaseTranscoderDescriptor<N, T>
+export type TranscoderResult = {
+  asset: TranscoderOutputFile
+  subfiles?: TranscoderOutputFile[]
+}
+
+export type Transcoder<ExtraOptions = {}, ExtraResults = {}> = (
+  options: TranscoderOptions & ExtraOptions
+) => Promise<TranscoderResult & ExtraResults>

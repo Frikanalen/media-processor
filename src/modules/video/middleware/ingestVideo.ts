@@ -33,7 +33,10 @@ export const ingestVideo =
     const { upload } = context.state
 
     const metadata = await getMetadataOrThrow400(upload.path)
-    const duration = metadata.probed.format.duration!
+    const duration = metadata.probed.format.duration
+
+    if (duration === undefined)
+      throw new HttpError(400, "Invalid file: duration is missing")
 
     const Body = createReadStream(upload.path)
     const Bucket = "media"

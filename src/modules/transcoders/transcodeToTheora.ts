@@ -16,7 +16,9 @@ export const transcodeToTheora: Transcoder = async (options) => {
       .autopad(true)
 
     theora.on("progress", (progress) => onProgress(progress.percent))
-    theora.on("end", () => resolve({ asset: { path: outputPath } }))
+    theora.on("end", () =>
+      resolve({ asset: { path: outputPath, mime: "video/ogg" } })
+    )
     theora.on("error", (e) => reject(e))
     theora.run()
   })

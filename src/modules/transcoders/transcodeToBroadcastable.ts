@@ -21,7 +21,9 @@ export const transcodeToBroadcastable: Transcoder = async (options) => {
       .autopad(true)
 
     broadcast.on("progress", (progress) => onProgress(progress.percent))
-    broadcast.on("end", () => resolve({ asset: { path: outputPath } }))
+    broadcast.on("end", () =>
+      resolve({ asset: { path: outputPath, mime: "application/mxf" } })
+    )
     broadcast.on("error", (e) => reject(e))
     broadcast.run()
   })
