@@ -40,11 +40,11 @@
     "prom-client": "^14.2.0",
     "redis": "^4.5.0",
     "serve": "^14.1.2",
-    "sharp": "^0.31.2",
+    "sharp": "^0.32.0",
     "shell-quote": "^1.8.0",
     "small-uuid": "^1.0.1",
     "tslog": "^4.2.0",
-    "yup": "^0.32.11"
+    "yup": "^1.1.1"
   },
   "devDependencies": {
     "@tsconfig/node18-strictest-esm": "^1.0.1",
@@ -58,10 +58,10 @@
     "nodemon": "^2.0.20",
     "onchange": "^7.1.0",
     "openapi": "^1.0.1",
-    "openapi-typescript-codegen": "^0.23.0",
+    "openapi-typescript-codegen": "^0.24.0",
     "prettier": "^2.7.1",
     "ts-node": "^10.9.1",
-    "typescript": "4.9.5"
+    "typescript": "5.0.4"
   },
   "repository": "git@github.com:Frikanalen/media-processor.git",
   "author": "Tore Sinding Bekkedal <toresbe@protonmail.com>"

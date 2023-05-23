@@ -4,7 +4,9 @@
     "exactOptionalPropertyTypes": false,
     "esModuleInterop": true,
     "sourceMap": true,
-    "outDir": "build"
+    "outDir": "build",
+    "importsNotUsedAsValues": null,
+    "verbatimModuleSyntax": true
   },
   "ts-node": {
     "esm": true,
