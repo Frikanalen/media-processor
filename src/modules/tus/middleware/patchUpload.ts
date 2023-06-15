@@ -1,6 +1,6 @@
 import type { Middleware } from "koa"
 import type { ResumableUpload } from "../classes/ResumableUpload.js"
-import { HttpError } from "../../core/classes/HttpError.js"
+import { HttpError } from "../../core/HttpError"
 
 export type PatchUploadState = {
   upload: ResumableUpload

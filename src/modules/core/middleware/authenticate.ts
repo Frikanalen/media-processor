@@ -1,7 +1,7 @@
 import type { Middleware } from "koa"
-import { HttpError } from "../../core/classes/HttpError.js"
+import { HttpError } from "../HttpError"
 import axios from "axios"
-import { FK_API, FK_API_KEY, SECRET_KEY_HEADER } from "../../core/constants.js"
+import { FK_API, FK_API_KEY, SECRET_KEY_HEADER } from "../constants"
 
 export type AuthUser = {
   id: number
@@ -43,13 +43,9 @@ export const authenticate =
 
     const { user } = data
 
-    if (!user && required) {
-      throw new HttpError(401)
-    }
+    if (!user && required) throw new HttpError(401)
 
-    if (user) {
-      context.state.user = user
-    }
+    if (user) context.state.user = user
 
     return next()
   }

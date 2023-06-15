@@ -1,4 +1,4 @@
-import { redis } from "../redis.js"
+import { redis } from "../redis"
 
 export class Namespace<T extends object> {
   constructor(private prefix: string) {}

@@ -9,9 +9,10 @@ import { sendCORSHeaders } from "./modules/core/middleware/sendCORSHeaders"
 import { videoRouter } from "./modules/video/router"
 import { log } from "./modules/core/log"
 import { FK_API, FK_API_KEY, SECRET_KEY_HEADER } from "./modules/core/constants"
-import { OpenAPI } from "./client"
+import { OpenAPI } from "./generated"
 import { statusUpdate } from "./modules/status/router"
-import { showMetrics } from "./modules/metrics/router"
+
+import { showMetrics } from "./modules/core/metrics"
 
 OpenAPI.BASE = FK_API
 

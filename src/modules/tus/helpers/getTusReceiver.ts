@@ -5,7 +5,7 @@ import { getUpload } from "../middleware/getUpload.js"
 import { sendUpload } from "../middleware/sendUpload.js"
 import { patchUpload } from "../middleware/patchUpload.js"
 import type { Middleware } from "koa"
-import { authenticate } from "../../auth/middleware/authenticate.js"
+import { authenticate } from "../../core/middleware/authenticate"
 import { log } from "../../core/log"
 
 export type Options = {

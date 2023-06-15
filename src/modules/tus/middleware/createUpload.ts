@@ -1,9 +1,9 @@
 import type { Middleware } from "koa"
 import { TUS_MAX_SIZE_DEFAULT } from "../constants.js"
-import { HttpError } from "../../core/classes/HttpError.js"
+import { HttpError } from "../../core/HttpError"
 import { ResumableUpload } from "../classes/ResumableUpload.js"
 import { parseMetadata } from "../helpers/parseMetadata.js"
-import type { AuthState } from "../../auth/middleware/authenticate.js"
+import type { AuthState } from "../../core/middleware/authenticate"
 import { log } from "../../core/log"
 
 export type CreateUploadOptions = {

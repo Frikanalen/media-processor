@@ -1,6 +1,7 @@
 import { PassThrough } from "stream"
-import { s3Client } from "../../s3/client.js"
-import type { LocatorString, Provider, S3LocatorString } from "../types.js"
+import { s3Client } from "../../core/client"
+
+import type { LocatorString, Provider, S3LocatorString } from "./getLocator"
 
 type S3Locator = {
   provider: "S3"

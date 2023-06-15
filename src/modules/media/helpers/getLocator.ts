@@ -1,5 +1,6 @@
-import type { LocatorString, Provider } from "../types.js"
-
+export type Provider = "S3" | "CLOUDFLARE"
+export type LocatorString = `${Provider}:${string}`
+export type S3LocatorString = `${string}:${string}`
 export const getLocator = (
   provider: Provider,
   bucket: string,

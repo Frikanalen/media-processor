@@ -1,7 +1,7 @@
 import type { Middleware } from "koa"
 import { ResumableUpload } from "../classes/ResumableUpload.js"
-import { HttpError } from "../../core/classes/HttpError.js"
-import type { AuthState } from "../../auth/middleware/authenticate.js"
+import { HttpError } from "../../core/HttpError"
+import type { AuthState } from "../../core/middleware/authenticate"
 
 export type GetUploadState = AuthState & {
   upload: ResumableUpload

@@ -1,7 +1,8 @@
 import Queue from "bull"
 import type { VideoJobData } from "../video/types"
 import { REDIS_URL } from "../redis/redis"
-import { Gauge } from "prom-client"
+import { Gauge, register } from "prom-client"
+import type { Middleware } from "koa"
 
 const queue = new Queue<VideoJobData>("video-processing", REDIS_URL)
 
@@ -41,3 +42,8 @@ const processQueueFailed = new Gauge({
     processQueueFailed.set(counts.failed)
   },
 })
+export const showMetrics: Middleware = async (ctx, next) => {
+  if (ctx.path !== "/metrics") await next()
+  ctx.set("Content-Type", register.contentType)
+  ctx.body = register.metrics()
+}
