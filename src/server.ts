@@ -1,18 +1,23 @@
 import "dotenv/config"
 
-import { redis } from "./modules/redis/redis"
+import { redis } from "./redis/redis"
 import Koa from "koa"
 import bodyParser from "koa-bodyparser"
-import { logRequest } from "./modules/core/middleware/logRequest"
-import { handleError } from "./modules/core/middleware/handleError"
-import { sendCORSHeaders } from "./modules/core/middleware/sendCORSHeaders"
-import { videoRouter } from "./modules/video/router"
-import { log } from "./modules/core/log"
-import { FK_API, FK_API_KEY, SECRET_KEY_HEADER } from "./modules/core/constants"
+import { logRequest } from "./core/middleware/logRequest"
+import { handleError } from "./core/middleware/handleError"
+import { sendCORSDev } from "./core/middleware/sendCORSDev"
+import { videoRouter } from "./video/router"
+import { log } from "./core/log"
+import {
+  FK_API,
+  FK_API_KEY,
+  IS_PROD,
+  SECRET_KEY_HEADER,
+} from "./core/constants"
 import { OpenAPI } from "./generated"
-import { statusUpdate } from "./modules/status/router"
+import { statusUpdate } from "./status/router"
 
-import { showMetrics } from "./modules/core/metrics"
+import { showMetrics } from "./core/metrics"
 
 OpenAPI.BASE = FK_API
 
@@ -29,7 +34,7 @@ const app = new Koa()
 app.use(logRequest())
 app.use(handleError())
 app.use(bodyParser())
-app.use(sendCORSHeaders())
+if (!IS_PROD) app.use(sendCORSDev())
 app.use(showMetrics)
 app.use(videoRouter.prefix("/upload/video").routes())
 app.use(statusUpdate("/upload/status"))

@@ -25,7 +25,7 @@ AWS_REGION=no-where-1
 AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
 AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 # Location of redis backend
-REDIS_URL=redis://localhost:6379
+url=redis://localhost:6379
 ```
 
 ## TODO
