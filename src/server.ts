@@ -27,7 +27,7 @@ const port = Number(process.env["PORT"]) || 8001
 const app = new Koa()
 
 app.use(logRequest())
-app.use(handleError())
+app.use(handleError)
 app.use(bodyParser())
 if (!IS_PROD) app.use(sendCORSDev())
 app.use(showMetrics)

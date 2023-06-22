@@ -1,5 +1,4 @@
 import type { Middleware } from "koa"
-import { HttpError } from "../HttpError.js"
 import axios from "axios"
 import { FK_API, FK_API_KEY, SECRET_KEY_HEADER } from "../constants.js"
 
@@ -23,9 +22,9 @@ export type Options = {
 // with a user profile load every time we upload a chunk of data
 export const authenticate =
   (options: Options): Middleware<AuthState> =>
-  async (context, next) => {
+  async (ctx, next) => {
     const { required } = options
-    const cookie = context.get("Cookie")
+    const cookie = ctx.get("Cookie")
 
     const { data, status } = await axios.get<AuthData>("/auth/user", {
       baseURL: FK_API,
@@ -37,13 +36,12 @@ export const authenticate =
       },
     })
 
-    if (status !== 200)
-      throw new HttpError(500, "could not reach backend to auth user")
+    if (status !== 200) ctx.throw(500, "could not reach backend to auth user")
 
     if (!data.user) {
-      if (required) throw new HttpError(401)
+      if (required) ctx.throw(401)
     } else {
-      context.state.user = data.user
+      ctx.state.user = data.user
     }
 
     return next()
