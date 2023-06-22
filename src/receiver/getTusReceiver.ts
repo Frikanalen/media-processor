@@ -30,7 +30,7 @@ export const getTusReceiver = (router: Router, options: Options) => {
     authenticate({ required: true }),
     tusHeaders,
     uploadGet,
-    sendUpload()
+    sendUpload
   )
 
   router.patch(
