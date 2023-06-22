@@ -32,11 +32,6 @@ RUN yarn build
 
 FROM builder
 
-RUN date
-RUN pwd
-RUN ls
-RUN find /app/build
-
 RUN mkdir -p /app/tmp-upload
 
 ENTRYPOINT ["/usr/bin/yarn"]
