@@ -155,6 +155,10 @@ export const getVideoMetadata = async (
     throw new Error("No available streams!")
   }
 
+  // Despite the typings, "duration" comes back as "N/A" if it's an image
+  if ((probed.format.duration! as unknown as string) === "N/A")
+    throw new Error("File duration is 'N/A'")
+
   const videoStats = getVideoStats(probed.streams)
   const audioStats = getAudioStats(probed.streams)
 

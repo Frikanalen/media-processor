@@ -9,13 +9,12 @@ import { log } from "../log.js"
 import { uploadPatch } from "./uploadPatch.js"
 
 export type Options = {
-  type: "video"
   maxSize?: number
   onComplete: Middleware<any>
 }
 
 export const getTusReceiver = (router: Router, options: Options) => {
-  const { type, maxSize, onComplete } = options
+  const { maxSize, onComplete } = options
 
   const tusHeaders = setTusHeaders(maxSize)
 
@@ -23,22 +22,22 @@ export const getTusReceiver = (router: Router, options: Options) => {
     "/",
     authenticate({ required: true }),
     tusHeaders,
-    createUpload({ type, maxSize })
+    createUpload({ maxSize })
   )
 
   router.head(
     "/:key",
     authenticate({ required: true }),
     tusHeaders,
-    uploadGet(type),
+    uploadGet,
     sendUpload()
   )
 
   router.patch(
     "/:key",
     authenticate({ required: true }),
-    uploadGet(type),
-    uploadPatch(),
+    uploadGet,
+    uploadPatch,
     (_, next) => {
       log.info("Upload complete")
       return next()

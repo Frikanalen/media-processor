@@ -13,7 +13,6 @@ const statAsync = promisify(stat)
 
 type ResumableUploadCreateOptions = {
   user: number
-  type: string
   length: number
   filename: string
   metadata: Record<string, string>
@@ -30,8 +29,6 @@ type ResumableUploadData = {
   length: number
   /** The name of the file uploaded */
   filename: string
-  /** What kind of media */
-  type: string
   /** The user that creted this upload */
   user: number
   /** Metadata used for various reasons */
@@ -157,10 +154,6 @@ export class ResumableUpload {
 
   public get offset() {
     return this.data.offset
-  }
-
-  public get type() {
-    return this.data.type
   }
 
   public get filename() {

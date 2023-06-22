@@ -1,26 +1,23 @@
 import type { Middleware } from "koa"
 import { ResumableUpload } from "./ResumableUpload.js"
-import { HttpError } from "../HttpError.js"
 import type { AuthState } from "../middleware/authenticate.js"
 
 export type GetUploadState = AuthState & {
   upload: ResumableUpload
 }
 
-export const uploadGet =
-  (type: string): Middleware<GetUploadState> =>
-  async (context, next) => {
-    const { user } = context.state
-    const { key } = context["params"]
+export const uploadGet: Middleware<GetUploadState> = async (ctx, next) => {
+  const { user } = ctx.state
+  const { key } = ctx["params"]
 
-    if (!key) throw new HttpError(400, 'Must supply "key"')
+  if (!key) return ctx.throw(400, "missing_key")
 
-    const upload = await ResumableUpload.restore(key)
+  const upload = await ResumableUpload.restore(key)
 
-    if (!upload || user.id !== upload.user || upload.type !== type) {
-      throw new HttpError(404, "could not resume upload")
-    }
+  if (!upload) return ctx.throw(410, "no_such_upload")
+  if (user.id !== upload.user) return ctx.throw(403, "not_your_upload")
 
-    context.state.upload = upload
-    return next()
-  }
+  ctx.state.upload = upload
+
+  return next()
+}

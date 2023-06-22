@@ -1,27 +1,24 @@
 import type { ResumableUpload } from "./ResumableUpload.js"
 import type { Middleware } from "koa"
-import { HttpError } from "../HttpError.js"
 
 export type PatchUploadState = {
   upload: ResumableUpload
 }
 
-export const uploadPatch =
-  (): Middleware<PatchUploadState> => async (context, next) => {
-    const { upload } = context.state
+export const uploadPatch: Middleware<PatchUploadState> = async (ctx, next) => {
+  const { upload } = ctx.state
 
-    const offset = Number(context.get("Upload-Offset"))
+  const offset = Number(ctx.get("Upload-Offset"))
 
-    if (offset !== upload.offset || isNaN(offset)) {
-      throw new HttpError(400, "Invalid offset")
-    }
+  if (offset !== upload.offset || isNaN(offset))
+    return ctx.throw(400, "invalid_offset")
 
-    await upload.writeToFile(context.req)
+  await upload.writeToFile(ctx.req)
 
-    context.set("Upload-Offset", String(upload.offset))
-    context.set("Upload-Length", String(upload.length))
+  ctx.set("Upload-Offset", String(upload.offset))
+  ctx.set("Upload-Length", String(upload.length))
 
-    if (upload.finished) return next()
+  if (upload.finished) return next()
 
-    context.status = 204
-  }
+  ctx.status = 204
+}
