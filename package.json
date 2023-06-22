@@ -17,7 +17,7 @@
     "start": "node ./build/server.js",
     "fetch-api": "curl -O https://beta.frikanalen.no/api/v2/open-api-spec.json",
     "fetch-local": "curl -O http://localhost:8080/open-api-spec.json",
-    "generate": "openapi --input ./open-api-spec.json -c axios  --output src/generated && prettier -w src/generated >> /dev/null",
+    "generate": "echo note that file extensions must be added back to imports in src/generated && openapi --input ./open-api-spec.json -c axios  --output src/generated && prettier -w src/generated >> /dev/null",
     "dev": "nodemon src/server.ts"
   },
   "dependencies": {
