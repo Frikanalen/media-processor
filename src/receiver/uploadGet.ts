@@ -7,7 +7,7 @@ export type GetUploadState = AuthState & {
 }
 
 export const uploadGet: Middleware<GetUploadState> = async (ctx, next) => {
-  const { user } = ctx.state
+  const user = ctx.state.user.id
   const { key } = ctx["params"]
 
   if (!key) return ctx.throw(400, "missing_key")
@@ -15,7 +15,8 @@ export const uploadGet: Middleware<GetUploadState> = async (ctx, next) => {
   const upload = await ResumableUpload.restore(key)
 
   if (!upload) return ctx.throw(410, "no_such_upload")
-  if (user.id !== upload.user) return ctx.throw(403, "not_your_upload")
+
+  if (user !== upload.user) return ctx.throw(403, "not_your_upload")
 
   ctx.state.upload = upload
 
