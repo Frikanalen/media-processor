@@ -2,9 +2,9 @@ import { close, createWriteStream, open, stat, unlink } from "fs"
 import { promisify } from "util"
 import { randomBytes } from "crypto"
 import type { Readable } from "stream"
-import { HttpError } from "../HttpError.js"
-import { TEMP_UPLOAD_FOLDER } from "../constants.js"
-import { RedisNamespace } from "./redis/RedisNamespace.js"
+import { HttpError } from "../../HttpError"
+import { TEMP_UPLOAD_FOLDER } from "../../constants"
+import { RedisNamespace } from "./RedisNamespace"
 
 const openAsync = promisify(open)
 const closeAsync = promisify(close)

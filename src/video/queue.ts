@@ -1,5 +1,5 @@
 import Queue from "bull"
-import { url } from "../receiver/redis/connection.js"
+import { url } from "../upload/redis/connection.js"
 import type { VideoJobData } from "./types.js"
 import { process } from "./process.js"
 

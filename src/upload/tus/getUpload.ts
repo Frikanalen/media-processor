@@ -1,12 +1,13 @@
 import type { Middleware } from "koa"
-import { ResumableUpload } from "./ResumableUpload.js"
-import type { AuthState } from "../middleware/authenticate.js"
+import { ResumableUpload } from "../redis/ResumableUpload"
+import type { AuthState } from "../../middleware/authenticate"
 
 export type GetUploadState = AuthState & {
   upload: ResumableUpload
 }
 
-export const uploadGet: Middleware<GetUploadState> = async (ctx, next) => {
+/** Fetches an upload in progress from Redis **/
+export const getUpload: Middleware<GetUploadState> = async (ctx, next) => {
   const user = ctx.state.user.id
   const { key } = ctx["params"]
 

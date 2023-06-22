@@ -1,6 +1,6 @@
 import Queue from "bull"
 import type { VideoJobData } from "./video/types.js"
-import { url } from "./receiver/redis/connection.js"
+import { url } from "./upload/redis/connection.js"
 import { Gauge, register } from "prom-client"
 import type { Middleware } from "koa"
 

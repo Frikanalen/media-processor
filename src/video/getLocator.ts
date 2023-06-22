@@ -6,6 +6,4 @@ export const getLocator = (
   bucket: string,
   key: string,
   name: string
-): LocatorString => {
-  return `${provider}:${bucket}:${key}/${name}`
-}
+): LocatorString => `${provider}:${bucket}:${key}/${name}`

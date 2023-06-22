@@ -36,10 +36,10 @@ export const authenticate =
       },
     })
 
-    if (status !== 200) ctx.throw(500, "could not reach backend to auth user")
+    if (status !== 200) return ctx.throw(500, "auth_server_error")
 
     if (!data.user) {
-      if (required) ctx.throw(401)
+      if (required) return ctx.throw(401)
     } else {
       ctx.state.user = data.user
     }

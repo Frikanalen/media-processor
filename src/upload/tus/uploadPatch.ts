@@ -1,4 +1,4 @@
-import type { ResumableUpload } from "./ResumableUpload.js"
+import type { ResumableUpload } from "../redis/ResumableUpload"
 import type { Middleware } from "koa"
 
 export type PatchUploadState = {
