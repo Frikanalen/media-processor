@@ -1,10 +1,10 @@
 import Router from "@koa/router"
-import { getTusReceiver } from "../receiver/getTusReceiver"
-import { ingestVideo } from "./middleware/ingestVideo"
+import { getTusReceiver } from "../receiver/getTusReceiver.js"
+import { ingestVideo } from "./middleware/ingestVideo.js"
 
 const router = getTusReceiver(new Router(), {
   type: "video",
-  onComplete: [ingestVideo()],
+  onComplete: ingestVideo,
 })
 
 export { router as videoRouter }

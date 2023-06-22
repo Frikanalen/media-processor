@@ -1,5 +1,5 @@
 import { Logger } from "tslog"
-import { IS_PROD } from "./constants"
+import { IS_PROD } from "./constants.js"
 
 const LogLevels = [
   "SILLY",

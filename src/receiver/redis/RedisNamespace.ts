@@ -1,16 +1,16 @@
-import { redis } from "./redis"
+import { connection } from "./connection.js"
 
 export class RedisNamespace<T extends object> {
   constructor(private prefix: string) {}
 
   public set(key: string, value: T, duration?: number) {
-    return redis.set(this.getKey(key), JSON.stringify(value), {
+    return connection.set(this.getKey(key), JSON.stringify(value), {
       EX: duration!,
     })
   }
 
   public async get(key: string) {
-    const value = await redis.get(this.getKey(key))
+    const value = await connection.get(this.getKey(key))
 
     if (value) {
       return JSON.parse(value) as T
@@ -20,7 +20,7 @@ export class RedisNamespace<T extends object> {
   }
 
   public delete(key: string) {
-    return redis.del(this.getKey(key))
+    return connection.del(this.getKey(key))
   }
 
   public async assign(key: string, value: Partial<T>) {

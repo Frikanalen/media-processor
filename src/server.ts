@@ -1,23 +1,18 @@
 import "dotenv/config"
 
-import { redis } from "./redis/redis"
+import { connection } from "./receiver/redis/connection.js"
 import Koa from "koa"
 import bodyParser from "koa-bodyparser"
-import { logRequest } from "./core/middleware/logRequest"
-import { handleError } from "./core/middleware/handleError"
-import { sendCORSDev } from "./core/middleware/sendCORSDev"
-import { videoRouter } from "./video/router"
-import { log } from "./core/log"
-import {
-  FK_API,
-  FK_API_KEY,
-  IS_PROD,
-  SECRET_KEY_HEADER,
-} from "./core/constants"
-import { OpenAPI } from "./generated"
-import { statusUpdate } from "./status/router"
+import { logRequest } from "./middleware/logRequest.js"
+import { handleError } from "./middleware/handleError.js"
+import { sendCORSDev } from "./middleware/sendCORSDev.js"
+import { videoRouter } from "./video/router.js"
+import { log } from "./log.js"
+import { FK_API, FK_API_KEY, IS_PROD, SECRET_KEY_HEADER } from "./constants.js"
+import { OpenAPI } from "./generated/index.js"
+import { statusUpdate } from "./status/router.js"
 
-import { showMetrics } from "./core/metrics"
+import { showMetrics } from "./metrics.js"
 
 OpenAPI.BASE = FK_API
 
@@ -40,7 +35,7 @@ app.use(videoRouter.prefix("/upload/video").routes())
 app.use(statusUpdate("/upload/status"))
 
 async function main() {
-  await redis.connect()
+  await connection.connect()
   app.listen(port, () => log.info(`media-processor listening on port ${port}`))
 }
 

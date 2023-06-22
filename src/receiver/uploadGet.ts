@@ -1,13 +1,13 @@
 import type { Middleware } from "koa"
-import { ResumableUpload } from "./ResumableUpload"
-import { HttpError } from "../core/HttpError"
-import type { AuthState } from "../core/middleware/authenticate"
+import { ResumableUpload } from "./ResumableUpload.js"
+import { HttpError } from "../HttpError.js"
+import type { AuthState } from "../middleware/authenticate.js"
 
 export type GetUploadState = AuthState & {
   upload: ResumableUpload
 }
 
-export const getUpload =
+export const uploadGet =
   (type: string): Middleware<GetUploadState> =>
   async (context, next) => {
     const { user } = context.state

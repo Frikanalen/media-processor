@@ -1,12 +1,12 @@
+import type { ResumableUpload } from "./ResumableUpload.js"
 import type { Middleware } from "koa"
-import type { ResumableUpload } from "./ResumableUpload"
-import { HttpError } from "../core/HttpError"
+import { HttpError } from "../HttpError.js"
 
 export type PatchUploadState = {
   upload: ResumableUpload
 }
 
-export const patchUpload =
+export const uploadPatch =
   (): Middleware<PatchUploadState> => async (context, next) => {
     const { upload } = context.state
 

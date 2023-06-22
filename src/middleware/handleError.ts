@@ -1,11 +1,14 @@
 import type { Middleware } from "koa"
-import { HttpError } from "../HttpError"
+import { HttpError } from "../HttpError.js"
 import * as Yup from "yup"
+import { log } from "../log.js"
 
 export const handleError = (): Middleware => async (context, next) => {
   try {
     return await next()
   } catch (error: any) {
+    log.error(`in handleError: ${error}`)
+
     if (error instanceof HttpError) {
       const { code, reason, details } = error
 
@@ -32,8 +35,6 @@ export const handleError = (): Middleware => async (context, next) => {
     context.body = {
       message: "Internal Server Error",
     }
-
-    console.error(error)
 
     return
   }

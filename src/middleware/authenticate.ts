@@ -1,7 +1,7 @@
 import type { Middleware } from "koa"
-import { HttpError } from "../HttpError"
+import { HttpError } from "../HttpError.js"
 import axios from "axios"
-import { FK_API, FK_API_KEY, SECRET_KEY_HEADER } from "../constants"
+import { FK_API, FK_API_KEY, SECRET_KEY_HEADER } from "../constants.js"
 
 export type AuthUser = {
   id: number
@@ -37,15 +37,14 @@ export const authenticate =
       },
     })
 
-    if (status !== 200) {
+    if (status !== 200)
       throw new HttpError(500, "could not reach backend to auth user")
+
+    if (!data.user) {
+      if (required) throw new HttpError(401)
+    } else {
+      context.state.user = data.user
     }
-
-    const { user } = data
-
-    if (!user && required) throw new HttpError(401)
-
-    if (user) context.state.user = user
 
     return next()
   }

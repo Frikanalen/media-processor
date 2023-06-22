@@ -1,24 +1,46 @@
-import { open, close, createWriteStream, unlink, stat } from "fs"
+import { close, createWriteStream, open, stat, unlink } from "fs"
 import { promisify } from "util"
 import { randomBytes } from "crypto"
 import type { Readable } from "stream"
-import { HttpError } from "../core/HttpError"
-import type { ResumableUploadData } from "./ResumableUploadData"
-import { resumableUploadNamespace } from "./resumableUploadNamespace"
-import { TEMP_UPLOAD_FOLDER } from "../core/constants"
+import { HttpError } from "../HttpError.js"
+import { TEMP_UPLOAD_FOLDER } from "../constants.js"
+import { RedisNamespace } from "./redis/RedisNamespace.js"
 
 const openAsync = promisify(open)
 const closeAsync = promisify(close)
 const unlinkAsync = promisify(unlink)
 const statAsync = promisify(stat)
 
-export type ResumableUploadCreateOptions = {
+type ResumableUploadCreateOptions = {
   user: number
   type: string
   length: number
   filename: string
   metadata: Record<string, string>
 }
+
+type ResumableUploadData = {
+  /** The key used to identify the upload */
+  key: string
+  /** The path to the file */
+  path: string
+  /** Upload offset, how many bytes has been uploaded */
+  offset: number
+  /** Total amount of bytes, the size of the file */
+  length: number
+  /** The name of the file uploaded */
+  filename: string
+  /** What kind of media */
+  type: string
+  /** The user that creted this upload */
+  user: number
+  /** Metadata used for various reasons */
+  metadata: Record<string, string>
+}
+
+const resumableUploadNamespace = new RedisNamespace<ResumableUploadData>(
+  "resumable-uploads"
+)
 
 // Redis-backed resumable upload
 export class ResumableUpload {
