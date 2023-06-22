@@ -13,47 +13,46 @@ import { toWebP } from "../transcode/toWebP.js"
 import type { TranscoderOutputFile } from "../transcode/types.js"
 
 const makeThumbnails = (job: VideoJob) =>
-  Object.entries(ThumbnailDescriptors).map(
-    async ([name, { width, height }]) => {
-      try {
-        const bucket = "media"
-        const { key, pathToStill, mediaId } = job.data
-        const outputDir = `tmp-upload/${job.id}_${name}`
+  Object.entries(ThumbnailDescriptors).map(async ([thumbType, dimensions]) => {
+    try {
+      const { width, height } = dimensions
+      const Bucket = "media"
+      const { key, pathToStill, mediaId } = job.data
+      const outputDir = `tmp-upload/${job.id}_${thumbType}`
 
-        fs.mkdirSync(outputDir)
+      fs.mkdirSync(outputDir)
 
-        log.info(`Generating thumbnail ${name}`)
+      log.info(`Generating thumbnail ${thumbType}`)
 
-        const result = await toWebP({
-          onProgress: (progress) => {
-            log.debug(`${progress}%`)
-          },
-          inputPath: pathToStill!,
-          outputDir,
-          width,
-          height,
-        })
+      const result = await toWebP({
+        onProgress: (progress) => {
+          log.debug(`${progress}%`)
+        },
+        inputPath: pathToStill!,
+        outputDir,
+        width,
+        height,
+      })
 
-        await s3Client.putObject({
-          Bucket: bucket,
-          Key: `${key}/${name}`,
-          Body: await fs.createReadStream(result.asset.path),
-          ContentType: result.asset.mime,
-        })
+      await s3Client.putObject({
+        Bucket,
+        Key: `${key}/${thumbType}`,
+        Body: await fs.createReadStream(result.asset.path),
+        ContentType: result.asset.mime,
+      })
 
-        await fs.rmSync(outputDir, { recursive: true })
+      await fs.rmSync(outputDir, { recursive: true })
 
-        await MediaService.postVideosMediaAssets(mediaId, FK_API_KEY, {
-          type: name,
-          metadata: { width, height },
-          locator: getLocator("S3", bucket, key, name),
-        })
-      } catch (error) {
-        log.error(`Error generating thumbnail ${name}:`, error)
-        throw error
-      }
+      await MediaService.postVideosMediaAssets(mediaId, FK_API_KEY, {
+        type: thumbType,
+        metadata: dimensions,
+        locator: getLocator("S3", Bucket, key, thumbType),
+      })
+    } catch (error) {
+      log.error(`Error generating thumbnail ${thumbType}:`, error)
+      throw error
     }
-  )
+  })
 
 const uploadAndRegisterAsset = async (
   asset: TranscoderOutputFile,
