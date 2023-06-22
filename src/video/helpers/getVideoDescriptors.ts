@@ -1,7 +1,7 @@
-import { toBroadcast } from "../../transcode/toBroadcast"
-import { toTheora } from "../../transcode/toTheora"
-import { toWebM } from "../../transcode/toWebM"
-// import { toHLS } from "../../transcode/toHLS"
+import { toBroadcast } from "../../transcode/toBroadcast.js"
+import { toTheora } from "../../transcode/toTheora.js"
+import { toWebM } from "../../transcode/toWebM.js"
+// import { toHLS } from '../../transcode/toHLS.js'
 
 export type VideoTranscoders = "broadcastable" | "theora" | "webm" | "hls"
 

@@ -1,5 +1,5 @@
 import ffmpeg from "fluent-ffmpeg"
-import type { Transcoder } from "./types"
+import type { Transcoder } from "./types.js"
 
 export const toTheora: Transcoder = async (options) => {
   const { inputPath, outputDir, onProgress } = options

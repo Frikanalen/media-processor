@@ -1,18 +1,18 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { NewOrganizationForm } from "../models/NewOrganizationForm"
-import type { NewPlaylistForm } from "../models/NewPlaylistForm"
-import type { NewVideoForm } from "../models/NewVideoForm"
-import type { Organization } from "../models/Organization"
-import type { Playlist } from "../models/Playlist"
-import type { ResourceList } from "../models/ResourceList"
-import type { User } from "../models/User"
-import type { Video } from "../models/Video"
+import type { NewOrganizationForm } from "../models/NewOrganizationForm.js"
+import type { NewPlaylistForm } from "../models/NewPlaylistForm.js"
+import type { NewVideoForm } from "../models/NewVideoForm.js"
+import type { Organization } from "../models/Organization.js"
+import type { Playlist } from "../models/Playlist.js"
+import type { ResourceList } from "../models/ResourceList.js"
+import type { User } from "../models/User.js"
+import type { Video } from "../models/Video.js"
 
-import type { CancelablePromise } from "../core/CancelablePromise"
-import { OpenAPI } from "../core/OpenAPI"
-import { request as __request } from "../core/request"
+import type { CancelablePromise } from "../core/CancelablePromise.js"
+import { OpenAPI } from "../core/OpenAPI.js"
+import { request as __request } from "../core/request.js"
 
 export class OrganizationService {
   /**

@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Video } from "./Video"
+import type { Video } from "./Video.js"
 
 export type ScheduleEntry = {
   type: string

@@ -1,13 +1,13 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { LoginForm } from "../models/LoginForm"
-import type { RegisterForm } from "../models/RegisterForm"
-import type { User } from "../models/User"
+import type { LoginForm } from "../models/LoginForm.js"
+import type { RegisterForm } from "../models/RegisterForm.js"
+import type { User } from "../models/User.js"
 
-import type { CancelablePromise } from "../core/CancelablePromise"
-import { OpenAPI } from "../core/OpenAPI"
-import { request as __request } from "../core/request"
+import type { CancelablePromise } from "../core/CancelablePromise.js"
+import { OpenAPI } from "../core/OpenAPI.js"
+import { request as __request } from "../core/request.js"
 
 export class AuthenticationService {
   /**

@@ -1,13 +1,13 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { JukeboxSchedule } from "../models/JukeboxSchedule"
-import type { ScheduleEntry } from "../models/ScheduleEntry"
-import type { Video } from "../models/Video"
+import type { JukeboxSchedule } from "../models/JukeboxSchedule.js"
+import type { ScheduleEntry } from "../models/ScheduleEntry.js"
+import type { Video } from "../models/Video.js"
 
-import type { CancelablePromise } from "../core/CancelablePromise"
-import { OpenAPI } from "../core/OpenAPI"
-import { request as __request } from "../core/request"
+import type { CancelablePromise } from "../core/CancelablePromise.js"
+import { OpenAPI } from "../core/OpenAPI.js"
+import { request as __request } from "../core/request.js"
 
 export class SchedulingService {
   /**

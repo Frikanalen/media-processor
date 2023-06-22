@@ -1,5 +1,5 @@
 import type { Context, Next } from "koa"
-import { videoQueue } from "../video/queue"
+import { videoQueue } from "../video/queue.js"
 import { PassThrough } from "stream"
 
 const streamEventsMode = async (context: Context) => {

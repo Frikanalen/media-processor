@@ -24,8 +24,8 @@ BUCKET_PORT=9000
 AWS_REGION=no-where-1
 AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
 AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-# Location of redis backend
-url=redis://localhost:6379
+# Location of connection backend
+url=connection://localhost:6379
 ```
 
 ## TODO
@@ -37,7 +37,7 @@ url=redis://localhost:6379
 
 ```bash
 cp dev-env .env
-# This will expose a redis frontend at http://localhost:8083
+# This will expose a connection frontend at http://localhost:8083
 docker-compose up -d
 yarn run dev
 

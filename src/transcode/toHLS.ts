@@ -1,4 +1,4 @@
-import type { Transcoder, TranscoderOutputFile } from "./types"
+import type { Transcoder, TranscoderOutputFile } from "./types.js"
 import { spawn } from "node:child_process"
 // @ts-ignore
 import parse from "shell-quote/parse"

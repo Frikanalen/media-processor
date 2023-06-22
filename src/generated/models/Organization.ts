@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { User } from "./User"
+import type { User } from "./User.js"
 
 export type Organization = {
   id?: number

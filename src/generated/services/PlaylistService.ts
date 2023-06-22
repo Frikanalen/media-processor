@@ -1,13 +1,13 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { NewPlaylistForm } from "../models/NewPlaylistForm"
-import type { Playlist } from "../models/Playlist"
-import type { ResourceList } from "../models/ResourceList"
+import type { NewPlaylistForm } from "../models/NewPlaylistForm.js"
+import type { Playlist } from "../models/Playlist.js"
+import type { ResourceList } from "../models/ResourceList.js"
 
-import type { CancelablePromise } from "../core/CancelablePromise"
-import { OpenAPI } from "../core/OpenAPI"
-import { request as __request } from "../core/request"
+import type { CancelablePromise } from "../core/CancelablePromise.js"
+import { OpenAPI } from "../core/OpenAPI.js"
+import { request as __request } from "../core/request.js"
 
 export class PlaylistService {
   /**

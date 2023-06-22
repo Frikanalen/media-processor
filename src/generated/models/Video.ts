@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Organization } from "./Organization"
-import type { VideoMediaAsset } from "./VideoMediaAsset"
+import type { Organization } from "./Organization.js"
+import type { VideoMediaAsset } from "./VideoMediaAsset.js"
 
 export type Video = {
   id: number

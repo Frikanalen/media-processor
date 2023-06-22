@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Category } from "./Category"
+import type { Category } from "./Category.js"
 
 export type Config = {
   servers?: {

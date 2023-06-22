@@ -1,13 +1,13 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { Bulletin } from "../models/Bulletin"
-import type { NewBulletinForm } from "../models/NewBulletinForm"
-import type { ResourceList } from "../models/ResourceList"
+import type { Bulletin } from "../models/Bulletin.js"
+import type { NewBulletinForm } from "../models/NewBulletinForm.js"
+import type { ResourceList } from "../models/ResourceList.js"
 
-import type { CancelablePromise } from "../core/CancelablePromise"
-import { OpenAPI } from "../core/OpenAPI"
-import { request as __request } from "../core/request"
+import type { CancelablePromise } from "../core/CancelablePromise.js"
+import { OpenAPI } from "../core/OpenAPI.js"
+import { request as __request } from "../core/request.js"
 
 export class BulletinsService {
   /**

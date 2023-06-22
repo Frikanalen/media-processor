@@ -16,7 +16,7 @@ FROM ffmpeg-base as deps
 
 WORKDIR /app
 
-COPY package.json yarn.lock /app/
+COPY package.json yarn.lock ./
 
 RUN yarn --quiet
 #Right now we skip this step until I figure out how to get openapi to emit a file that doesn't
@@ -25,16 +25,17 @@ RUN yarn --quiet
 
 FROM deps as builder
 
-WORKDIR /app
-
-COPY --from=deps /app/node_modules ./
+COPY --from=deps /app/node_modules node_modules
 COPY . .
 
 RUN yarn build
 
 FROM builder
 
-WORKDIR /app
+RUN date
+RUN pwd
+RUN ls
+RUN find /app/build
 
 RUN mkdir -p /app/tmp-upload
 
