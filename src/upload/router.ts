@@ -5,7 +5,6 @@ import { uploadCreate } from "./tus/uploadCreate.js"
 import { uploadGet } from "./tus/uploadGet.js"
 import { uploadSend } from "./tus/uploadSend.js"
 import { uploadPatch } from "./tus/uploadPatch.js"
-import { log } from "../log.js"
 import type { Middleware } from "koa"
 
 export const TUS_RESUMABLE = "1.0.0"
@@ -18,11 +17,6 @@ export const setTusHeaders: Middleware = async (ctx, next) => {
   ctx.set("Tus-Resumable", TUS_RESUMABLE)
   ctx.set("Tus-Max-Size", String(TUS_MAX_SIZE))
 
-  return next()
-}
-
-const logSuccess: Middleware = (_, next) => {
-  log.info("Upload complete")
   return next()
 }
 
@@ -43,7 +37,6 @@ router.patch(
   authenticate({ required: true }),
   uploadGet,
   uploadPatch,
-  logSuccess,
   ingestVideo
 )
 

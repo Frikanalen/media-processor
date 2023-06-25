@@ -18,6 +18,8 @@ export const makeVideoKey = () => randomBytes(16).toString("hex")
 export const ingestVideo: Middleware<PatchUploadState> = async (ctx, next) => {
   const { upload } = ctx.state
 
+  log.info("Upload complete")
+
   let metadata: VideoMetadataV2
 
   try {
@@ -49,7 +51,7 @@ export const ingestVideo: Middleware<PatchUploadState> = async (ctx, next) => {
 
   await originalUpload.done()
 
-  log.info("upload complete; registering file on backend")
+  log.info("Registering file on backend")
 
   const originalLocator = getLocator("S3", Bucket, Key, "original")
 
