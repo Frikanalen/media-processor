@@ -64,7 +64,7 @@ export class ResumableUpload {
       upload.data.offset = size
     } catch (error: any) {
       if (error.code === "ENOENT") {
-        throw new HttpError(410)
+        throw new HttpError(410, "upload does not exist yet")
       }
 
       throw error

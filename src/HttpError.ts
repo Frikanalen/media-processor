@@ -20,6 +20,11 @@ export const reasonToCodeMap: Record<HttpStatus, string> = {
 
 export type HttpStatus = (typeof statusCodes)[keyof typeof statusCodes]
 
+/**
+ * @deprecated: Being replaced in favour of ctx.throw.
+ *              Still here because we still throw some HTTP errors directly from
+ *              non-HTTP classes, violating separation of concerns
+ */
 export class HttpError extends Error {
   public reason: string
   public details?: object
