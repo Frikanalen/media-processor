@@ -1,6 +1,5 @@
 import { createReadStream } from "fs"
 import type { Middleware } from "koa"
-import { HttpError } from "../../HttpError.js"
 import { getLocator } from "../getLocator.js"
 import type { PatchUploadState } from "../../upload/tus/uploadPatch.js"
 import { getVideoMetadata } from "../helpers/getVideoMetadata.js"
@@ -30,7 +29,7 @@ export const ingestVideo: Middleware<PatchUploadState> = async (ctx, next) => {
   const duration = metadata.probed.format.duration
 
   if (duration === undefined)
-    throw new HttpError(400, "Invalid file: duration is missing")
+    return ctx.throw(400, "Invalid file: duration is missing")
 
   const Body = createReadStream(upload.path)
   const Bucket = "media"
@@ -69,6 +68,8 @@ export const ingestVideo: Middleware<PatchUploadState> = async (ctx, next) => {
   })
 
   const jobId = typeof jobIdRaw === "string" ? parseInt(jobIdRaw) : jobIdRaw
+
+  log.info(`ingestVideo ctx.body = ${{ mediaId, jobId }}`)
 
   ctx.body = { mediaId, jobId }
 
