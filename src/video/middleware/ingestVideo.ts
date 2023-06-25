@@ -69,9 +69,9 @@ export const ingestVideo: Middleware<PatchUploadState> = async (ctx, next) => {
 
   const jobId = typeof jobIdRaw === "string" ? parseInt(jobIdRaw) : jobIdRaw
 
-  log.info(`ingestVideo ctx.body = ${{ mediaId, jobId }}`)
-
   ctx.body = { mediaId, jobId }
+
+  log.info(`ingestVideo ctx.body = ${ctx.body}`)
 
   log.info(`Created job ${jobId} for media ${mediaId}`)
 
