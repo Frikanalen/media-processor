@@ -1,6 +1,6 @@
 import type { Middleware } from "koa"
 import * as Yup from "yup"
-import { log } from "../log"
+import { log } from "../log.js"
 
 export const handleError: Middleware = async (context, next) => {
   try {
