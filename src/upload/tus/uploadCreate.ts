@@ -20,7 +20,7 @@ const parseMetadata = (metadata: string): Record<string, string> => {
 
   return result
 }
-export const createUpload: Middleware<CreateUploadState> = async (
+export const uploadCreate: Middleware<CreateUploadState> = async (
   ctx,
   next
 ) => {

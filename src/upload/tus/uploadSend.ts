@@ -5,7 +5,7 @@ export type SendUploadState = {
   upload: ResumableUpload
 }
 
-export const sendUpload: Middleware<SendUploadState> = async (ctx, next) => {
+export const uploadSend: Middleware<SendUploadState> = async (ctx, next) => {
   const { upload } = ctx.state
   const { offset, length } = upload
 

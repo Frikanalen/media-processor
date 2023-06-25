@@ -1,9 +1,9 @@
 import Router from "@koa/router"
 import { ingestVideo } from "../video/middleware/ingestVideo.js"
 import { authenticate } from "../middleware/authenticate.js"
-import { createUpload } from "./tus/createUpload.js"
-import { getUpload } from "./tus/getUpload.js"
-import { sendUpload } from "./tus/sendUpload.js"
+import { uploadCreate } from "./tus/uploadCreate.js"
+import { uploadGet } from "./tus/uploadGet.js"
+import { uploadSend } from "./tus/uploadSend.js"
 import { uploadPatch } from "./tus/uploadPatch.js"
 import { log } from "../log.js"
 import type { Middleware } from "koa"
@@ -28,20 +28,20 @@ const logSuccess: Middleware = (_, next) => {
 
 const router = new Router()
 
-router.post("/", authenticate({ required: true }), setTusHeaders, createUpload)
+router.post("/", authenticate({ required: true }), setTusHeaders, uploadCreate)
 
 router.head(
   "/:key",
   authenticate({ required: true }),
   setTusHeaders,
-  getUpload,
-  sendUpload
+  uploadGet,
+  uploadSend
 )
 
 router.patch(
   "/:key",
   authenticate({ required: true }),
-  getUpload,
+  uploadGet,
   uploadPatch,
   logSuccess,
   ingestVideo

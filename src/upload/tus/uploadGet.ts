@@ -7,7 +7,7 @@ export type GetUploadState = AuthState & {
 }
 
 /** Fetches an upload in progress from Redis **/
-export const getUpload: Middleware<GetUploadState> = async (ctx, next) => {
+export const uploadGet: Middleware<GetUploadState> = async (ctx, next) => {
   const user = ctx.state.user.id
   const { key } = ctx["params"]
 
