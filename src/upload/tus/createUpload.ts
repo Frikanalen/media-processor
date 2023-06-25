@@ -1,8 +1,8 @@
 import type { Middleware } from "koa"
-import { ResumableUpload } from "../redis/ResumableUpload"
-import type { AuthState } from "../../middleware/authenticate"
-import { log } from "../../log"
-import { TUS_MAX_SIZE } from "../router"
+import { ResumableUpload } from "../redis/ResumableUpload.js"
+import type { AuthState } from "../../middleware/authenticate.js"
+import { log } from "../../log.js"
+import { TUS_MAX_SIZE } from "../router.js"
 
 export type CreateUploadState = AuthState & {
   upload: ResumableUpload

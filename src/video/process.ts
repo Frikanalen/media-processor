@@ -1,5 +1,5 @@
 import { unlink } from "fs/promises"
-import { getLocator } from "./getLocator"
+import { getLocator } from "./getLocator.js"
 import { grabStill } from "./helpers/grabStill.js"
 import { ThumbnailDescriptors } from "./helpers/thumbnailDescriptors.js"
 import type { VideoJob } from "./types.js"

@@ -1,6 +1,6 @@
 import type { Middleware } from "koa"
-import { ResumableUpload } from "../redis/ResumableUpload"
-import type { AuthState } from "../../middleware/authenticate"
+import { ResumableUpload } from "../redis/ResumableUpload.js"
+import type { AuthState } from "../../middleware/authenticate.js"
 
 export type GetUploadState = AuthState & {
   upload: ResumableUpload
