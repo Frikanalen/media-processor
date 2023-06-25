@@ -1,5 +1,6 @@
 import type { ResumableUpload } from "../redis/ResumableUpload.js"
 import type { Middleware } from "koa"
+import { log } from "../../log.js"
 
 export type PatchUploadState = {
   upload: ResumableUpload
@@ -17,6 +18,8 @@ export const uploadPatch: Middleware<PatchUploadState> = async (ctx, next) => {
 
   ctx.set("Upload-Offset", String(upload.offset))
   ctx.set("Upload-Length", String(upload.length))
+
+  log.info(`upload.finished = ${upload.finished}`)
 
   if (upload.finished) return next()
 
