@@ -5,7 +5,7 @@ import Koa from "koa"
 import bodyParser from "koa-bodyparser"
 import { logRequest } from "./middleware/logRequest.js"
 import { handleError } from "./middleware/handleError.js"
-import { sendCORSDev } from "./middleware/sendCORSDev.js"
+//import { sendCORSDev } from "./middleware/sendCORSDev.js"
 import { videoRouter } from "./upload/router.js"
 import { log } from "./log.js"
 import { FK_API, FK_API_KEY, IS_PROD, SECRET_KEY_HEADER } from "./constants.js"
@@ -26,10 +26,12 @@ const port = Number(process.env["PORT"]) || 8001
 
 const app = new Koa()
 
+log.info({ IS_PROD })
+
 app.use(logRequest())
 app.use(handleError)
 app.use(bodyParser())
-if (!IS_PROD) app.use(sendCORSDev())
+//if (!IS_PROD) app.use(sendCORSDev())
 app.use(showMetrics)
 app.use(videoRouter.prefix("/upload/video").routes())
 app.use(statusUpdate("/upload/status"))
