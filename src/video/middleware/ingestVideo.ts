@@ -14,9 +14,31 @@ import { randomBytes } from "crypto"
 
 export const makeVideoKey = () => randomBytes(16).toString("hex")
 // TODO: This would probably be better solved by using tusd, storing directly to S3
+async function uploadVideo(path: string, Key: string, mime: string) {
+  const Body = createReadStream(path)
+  const Bucket = "media"
+
+  log.info(`Copying file to S3 as ${Bucket}/${Key}`)
+
+  const originalUpload = new Upload({
+    client: s3Client,
+    params: {
+      Body,
+      Bucket,
+      Key,
+      ContentType: mime,
+    },
+  })
+
+  await originalUpload.done()
+
+  return getLocator("S3", Bucket, Key, "original")
+}
+
 //   and then calling an endpoint in media-processor to get metadata/acceptance.
 export const ingestVideo: Middleware<PatchUploadState> = async (ctx, next) => {
   const { upload } = ctx.state
+  const Key = makeVideoKey()
 
   log.info("Upload complete")
 
@@ -28,37 +50,14 @@ export const ingestVideo: Middleware<PatchUploadState> = async (ctx, next) => {
     return ctx.throw(400, "Invalid file")
   }
 
-  const duration = metadata.probed.format.duration
-
-  if (duration === undefined)
-    return ctx.throw(400, "Invalid file: duration is missing")
-
-  const Body = createReadStream(upload.path)
-  const Bucket = "media"
-  const Key = makeVideoKey()
-
-  log.info(`Copying file to S3 as ${Bucket}/${Key}`)
-
-  const originalUpload = new Upload({
-    client: s3Client,
-    params: {
-      Body,
-      Bucket,
-      Key,
-      ContentType: metadata.mime,
-    },
-  })
-
-  await originalUpload.done()
+  const originalLocator = await uploadVideo(upload.path, Key, metadata.mime)
 
   log.info("Registering file on backend")
-
-  const originalLocator = getLocator("S3", Bucket, Key, "original")
 
   const { id: mediaId } = await MediaService.postVideosMedia(FK_API_KEY, {
     locator: originalLocator,
     fileName: upload.filename,
-    duration,
+    duration: metadata.duration,
     metadata,
   })
 
@@ -68,6 +67,8 @@ export const ingestVideo: Middleware<PatchUploadState> = async (ctx, next) => {
     metadata,
     key: Key,
   })
+
+  log.debug(`bull jobId = "${jobIdRaw}" (${typeof jobIdRaw})`)
 
   const jobId = typeof jobIdRaw === "string" ? parseInt(jobIdRaw) : jobIdRaw
 

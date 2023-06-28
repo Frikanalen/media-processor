@@ -25,6 +25,7 @@ export type AudioStats = {
 export type VideoMetadataV2 = {
   version: "2"
   mime: string
+  duration: number
   video: VideoStats
   audio: AudioStats
   probed: FfprobeData
@@ -156,14 +157,16 @@ export const getVideoMetadata = async (
   }
 
   // Despite the typings, "duration" comes back as "N/A" if it's an image
-  if ((probed.format.duration! as unknown as string) === "N/A")
-    throw new Error("File duration is 'N/A'")
+  if (!probed.format.duration || `${probed.format.duration}` === "N/A")
+    throw new Error(`File duration is ${probed.format.duration}`)
 
   const videoStats = getVideoStats(probed.streams)
   const audioStats = getAudioStats(probed.streams)
+  const duration = parseInt(`${probed.format.duration}`)
 
   return {
     mime,
+    duration,
     video: videoStats,
     audio: audioStats,
     version: "2",
