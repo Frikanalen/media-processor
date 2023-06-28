@@ -11,56 +11,58 @@ import { log } from "../../log.js"
 import { Upload } from "@aws-sdk/lib-storage"
 import { s3Client } from "../../s3Client.js"
 import { randomBytes } from "crypto"
+import type { ResumableUpload } from "../../upload/redis/ResumableUpload.js"
 
 export const makeVideoKey = () => randomBytes(16).toString("hex")
 // TODO: This would probably be better solved by using tusd, storing directly to S3
+//   and then calling an endpoint in media-processor to get metadata/acceptance.
 async function uploadVideo(path: string, Key: string, mime: string) {
-  const Body = createReadStream(path)
   const Bucket = "media"
 
   log.info(`Copying file to S3 as ${Bucket}/${Key}`)
 
+  const params = {
+    Body: createReadStream(path),
+    Bucket,
+    Key,
+    ContentType: mime,
+  }
+
   const originalUpload = new Upload({
     client: s3Client,
-    params: {
-      Body,
-      Bucket,
-      Key,
-      ContentType: mime,
-    },
+    params,
   })
 
   await originalUpload.done()
 
-  return getLocator("S3", Bucket, Key, "original")
+  log.debug("Upload complete")
+
+  return getLocator("S3", params.Bucket, Key, "original")
 }
 
-//   and then calling an endpoint in media-processor to get metadata/acceptance.
-export const ingestVideo: Middleware<PatchUploadState> = async (ctx, next) => {
-  const { upload } = ctx.state
-  const Key = makeVideoKey()
-
-  log.info("Upload complete")
-
-  let metadata: VideoMetadataV2
-
-  try {
-    metadata = await getVideoMetadata(upload.path)
-  } catch {
-    return ctx.throw(400, "Invalid file")
-  }
-
-  const originalLocator = await uploadVideo(upload.path, Key, metadata.mime)
-
+async function registerMedia(
+  originalLocator: `S3:${string}` | `CLOUDFLARE:${string}`,
+  upload: ResumableUpload,
+  metadata: VideoMetadataV2
+) {
   log.info("Registering file on backend")
 
-  const { id: mediaId } = await MediaService.postVideosMedia(FK_API_KEY, {
+  const { id } = await MediaService.postVideosMedia(FK_API_KEY, {
     locator: originalLocator,
     fileName: upload.filename,
     duration: metadata.duration,
     metadata,
   })
 
+  return id
+}
+
+async function createJob(
+  upload: ResumableUpload,
+  mediaId: number,
+  metadata: VideoMetadataV2,
+  Key: string
+) {
   const { id: jobIdRaw } = await videoQueue.add({
     pathToVideo: upload.path,
     mediaId,
@@ -70,11 +72,26 @@ export const ingestVideo: Middleware<PatchUploadState> = async (ctx, next) => {
 
   log.debug(`bull jobId = "${jobIdRaw}" (${typeof jobIdRaw})`)
 
-  const jobId = typeof jobIdRaw === "string" ? parseInt(jobIdRaw) : jobIdRaw
+  return typeof jobIdRaw === "string" ? parseInt(jobIdRaw) : jobIdRaw
+}
+
+export const ingestVideo: Middleware<PatchUploadState> = async (ctx, next) => {
+  const { upload } = ctx.state
+  const Key = makeVideoKey()
+
+  log.info("Upload from client complete")
+
+  const metadata = await getVideoMetadata(upload.path)
+  if (!metadata) return ctx.throw(400, "Invalid file")
+
+  const originalLocator = await uploadVideo(upload.path, Key, metadata.mime)
+
+  const mediaId = await registerMedia(originalLocator, upload, metadata)
+  const jobId = await createJob(upload, mediaId, metadata, Key)
 
   ctx.body = { mediaId, jobId }
 
-  log.info(`ingestVideo ctx.body = ${JSON.stringify(ctx.body)}`)
+  log.debug(`ingestVideo ctx.body = ${JSON.stringify(ctx.body)}`)
 
   log.info(`Created job ${jobId} for media ${mediaId}`)
 

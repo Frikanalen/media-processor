@@ -146,19 +146,22 @@ const getAudioQuality = (channels: number): string => {
 
 export const getVideoMetadata = async (
   path: string
-): Promise<VideoMetadataV2> => {
+): Promise<VideoMetadataV2 | undefined> => {
   log.info(`Running ffprobe on "${path}"`)
 
   const probed = await probeVideo(path)
   const mime = execSync(`file -b --mime-type ${path}`).toString().trim()
 
   if (probed.streams.length < 1) {
-    throw new Error("No available streams!")
+    log.error("No available streams!")
+    return undefined
   }
 
   // Despite the typings, "duration" comes back as "N/A" if it's an image
-  if (!probed.format.duration || `${probed.format.duration}` === "N/A")
-    throw new Error(`File duration is ${probed.format.duration}`)
+  if (!probed.format.duration || `${probed.format.duration}` === "N/A") {
+    log.error(`File duration is ${probed.format.duration}`)
+    return undefined
+  }
 
   const videoStats = getVideoStats(probed.streams)
   const audioStats = getAudioStats(probed.streams)
