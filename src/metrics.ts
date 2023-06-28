@@ -3,6 +3,7 @@ import type { VideoJobData } from "./video/types.js"
 import { url } from "./upload/redis/connection.js"
 import { Gauge, register } from "prom-client"
 import type { Middleware } from "koa"
+import { log } from "./log.js"
 
 const queue = new Queue<VideoJobData>("video-processing", url)
 
@@ -44,6 +45,9 @@ const processQueueFailed = new Gauge({
 })
 export const showMetrics: Middleware = async (ctx, next) => {
   if (ctx.path !== "/metrics") await next()
-  ctx.set("Content-Type", register.contentType)
-  ctx.body = register.metrics()
+  else {
+    log.debug(`Giving metrics response`)
+    ctx.set("Content-Type", register.contentType)
+    ctx.body = register.metrics()
+  }
 }
