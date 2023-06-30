@@ -1,4 +1,4 @@
-type ThumbnailType = "large" | "medium" | "small"
+type ThumbnailType = "thumbnail-large" | "thumbnail-medium" | "thumbnail-small"
 
 export type ThumbnailSettings = {
   width: number
@@ -6,7 +6,7 @@ export type ThumbnailSettings = {
 }
 
 export const ThumbnailDescriptors: Record<ThumbnailType, ThumbnailSettings> = {
-  large: { width: 1280, height: 720 },
-  medium: { width: 852, height: 480 },
-  small: { width: 360, height: 640 },
+  "thumbnail-large": { width: 1280, height: 720 },
+  "thumbnail-medium": { width: 852, height: 480 },
+  "thumbnail-small": { width: 360, height: 640 },
 }
