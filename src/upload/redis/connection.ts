@@ -13,8 +13,8 @@ const getRedisURL = () => {
   return REDIS_URL
 }
 
-export const REDIS_URL = getRedisURL()
+export const url = getRedisURL()
 
 export const connection = createClient({
-  url: REDIS_URL,
+  url,
 })

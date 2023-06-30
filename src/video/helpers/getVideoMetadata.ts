@@ -144,6 +144,7 @@ const getAudioQuality = (channels: number): string => {
   }
 }
 
+
 export const getVideoMetadata = async (
   path: string
 ): Promise<VideoMetadataV2 | undefined> => {
@@ -165,21 +166,21 @@ export const getVideoMetadata = async (
 
   const videoStats = getVideoStats(probed.streams)
   const audioStats = getAudioStats(probed.streams)
-  const duration = parseInt(`${probed.format.duration}`)
+  const duration = parseFloat(`${probed.format.duration}`)
 
   if (probed.format.duration === undefined) {
-    throw new Error("Duration is not available!")
+    log.error("Duration is not available!")
+    return undefined
+
   }
 
   if (probed.format.duration as unknown as string === "N/A") {
-    throw new Error("Duration is not available!")
+    log.error("Duration is not available!")
+    return undefined
   }
-
-  const duration = probed.format.duration
 
   return {
     mime,
-    duration,
     video: videoStats,
     audio: audioStats,
     duration,
