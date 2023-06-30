@@ -167,11 +167,22 @@ export const getVideoMetadata = async (
   const audioStats = getAudioStats(probed.streams)
   const duration = parseInt(`${probed.format.duration}`)
 
+  if (probed.format.duration === undefined) {
+    throw new Error("Duration is not available!")
+  }
+
+  if (probed.format.duration as unknown as string === "N/A") {
+    throw new Error("Duration is not available!")
+  }
+
+  const duration = probed.format.duration
+
   return {
     mime,
     duration,
     video: videoStats,
     audio: audioStats,
+    duration,
     version: "2",
     probed: probed,
   }
