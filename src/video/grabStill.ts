@@ -1,6 +1,6 @@
 import ffmpeg from "fluent-ffmpeg"
 import { basename } from "path"
-import { log } from "../../log.js"
+import { log } from "../log.js"
 
 /** Creates a png still of the specified seek position */
 export const grabStill = (path: string, seek: number) => {

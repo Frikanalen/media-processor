@@ -1,17 +1,16 @@
 import { createReadStream } from "fs"
 import type { Middleware } from "koa"
-import { getLocator } from "../getLocator.js"
-import type { PatchUploadState } from "../../upload/tus/uploadPatch.js"
-import { getVideoMetadata } from "../helpers/getVideoMetadata.js"
-import type { VideoMetadataV2 } from "../helpers/getVideoMetadata.js"
-import { videoQueue } from "../queue.js"
-import { FK_API_KEY } from "../../constants.js"
-import { MediaService } from "../../generated/index.js"
-import { log } from "../../log.js"
+import { getLocator } from "./getLocator.js"
+import type { PatchUploadState } from "../upload/tus/uploadPatch.js"
+import { getVideoMetadata } from "./getVideoMetadata.js"
+import type { VideoMetadataV2 } from "./getVideoMetadata.js"
+import { videoQueue } from "./queue.js"
+import { FK_API_KEY } from "../constants.js"
+import { MediaService } from "../generated/index.js"
+import { log } from "../log.js"
 import { Upload } from "@aws-sdk/lib-storage"
-import { s3Client } from "../../s3Client.js"
+import { s3Client } from "../s3Client.js"
 import { randomBytes } from "crypto"
-import type { ResumableUpload } from "../../upload/redis/ResumableUpload.js"
 
 export const makeVideoKey = () => randomBytes(16).toString("hex")
 // TODO: This would probably be better solved by using tusd, storing directly to S3
@@ -42,14 +41,14 @@ async function uploadVideo(path: string, Key: string, mime: string) {
 
 async function registerMedia(
   originalLocator: `S3:${string}` | `CLOUDFLARE:${string}`,
-  upload: ResumableUpload,
+  filename: string,
   metadata: VideoMetadataV2
 ) {
   log.info("Registering file on backend")
 
   const { id } = await MediaService.postVideosMedia(FK_API_KEY, {
     locator: originalLocator,
-    fileName: upload.filename,
+    fileName: filename,
     duration: metadata.duration,
     metadata,
   })
@@ -58,16 +57,16 @@ async function registerMedia(
 }
 
 async function createJob(
-  upload: ResumableUpload,
+  path: string,
   mediaId: number,
   metadata: VideoMetadataV2,
-  Key: string
+  key: string
 ) {
   const { id: jobIdRaw } = await videoQueue.add({
-    pathToVideo: upload.path,
+    pathToVideo: path,
     mediaId,
     metadata,
-    key: Key,
+    key,
   })
 
   log.debug(`bull jobId = "${jobIdRaw}" (${typeof jobIdRaw})`)
@@ -86,8 +85,13 @@ export const ingestVideo: Middleware<PatchUploadState> = async (ctx, next) => {
 
   const originalLocator = await uploadVideo(upload.path, Key, metadata.mime)
 
-  const mediaId = await registerMedia(originalLocator, upload, metadata)
-  const jobId = await createJob(upload, mediaId, metadata, Key)
+  const mediaId = await registerMedia(
+    originalLocator,
+    upload.filename,
+    metadata
+  )
+
+  const jobId = await createJob(upload.path, mediaId, metadata, Key)
 
   ctx.body = { mediaId, jobId }
 

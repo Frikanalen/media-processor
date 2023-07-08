@@ -1,5 +1,5 @@
 import Router from "@koa/router"
-import { ingestVideo } from "../video/middleware/ingestVideo.js"
+import { ingestVideo } from "../video/ingestVideo.js"
 import { authenticate } from "../middleware/authenticate.js"
 import { uploadCreate } from "./tus/uploadCreate.js"
 import { uploadGet } from "./tus/uploadGet.js"
