@@ -7,8 +7,7 @@ node_modules
 
 /tmp-upload
 
-
-#src/client
+src/generated
 open-api-spec.json
 build
 

@@ -19,13 +19,13 @@ WORKDIR /app
 COPY package.json yarn.lock ./
 
 RUN yarn --quiet
-#Right now we skip this step until I figure out how to get openapi to emit a file that doesn't
-#require manual patching
-#RUN yarn generate
+RUN yarn fetch-api
+RUN yarn generate
 
 FROM deps as builder
 
 COPY --from=deps /app/node_modules node_modules
+COPY --from=deps /app/src/generated src/generated
 COPY . .
 
 RUN yarn build

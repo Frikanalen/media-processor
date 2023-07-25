@@ -1,6 +1,6 @@
 import { Logger } from "tslog"
+import type { ILogObj } from "tslog"
 import { IS_PROD } from "./constants.js"
-import type { ILogObj } from "tslog/dist/nodejs/interfaces"
 import type { Middleware } from "koa"
 
 const LogLevels = [
@@ -15,14 +15,14 @@ const LogLevels = [
 
 export const getLogLevel = (): number => {
   const LOG_LEVEL = process.env["LOG_LEVEL"] as
-    | typeof LogLevels[number]
+    | (typeof LogLevels)[number]
     | undefined
 
   if (LOG_LEVEL === undefined) return LogLevels.indexOf("INFO")
 
   if (!LogLevels.includes(LOG_LEVEL))
     throw new Error(
-      `Unsupported value ${LOG_LEVEL}, must be [${LogLevels.join("|")}]`
+      `Unsupported value ${LOG_LEVEL}, must be [${LogLevels.join("|")}]`,
     )
 
   return LogLevels.indexOf(LOG_LEVEL)
