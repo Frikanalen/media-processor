@@ -1,44 +1,35 @@
 # Media processor
 
-This is the new media processing backend.
+This is the media processing service for Frikanalen.
 
-It will replace fkupload and fkprocess.
+* The server receives file uploads over tus, using its own implementation in order to be able to pass data back to the user.
 
-The server receives file uploads over tus.
+* Once a file has been uploaded, it is probed using ffmpeg.
 
-Once a file has been uploaded, it is probed using ffmpeg.
-If the file is not possible to probe or does not contain at least one media stream, it will return 400.
-If the file is found acceptable, it is stored on the configured S3 backend.
-An entry is then created in the database using the Frikanalen API.
+* A fully received file is probed for metadata and evaluated for technical acceptance criteria before the final upload PATCH call returns.
+
+* If the file fails to meet these criteria, or probing is not possible, media-processor will return 400 to the client.
+
+* If the file is found acceptable, it is copied to an S3 bucket and the backend is notified using internal APIs.
 
 ## Environment variables
 
-```dotenv
-# Internal API key
-FK_API_KEY=1234
-# Location of Frikanalen API
-FK_API=http://localhost:8080
-# AWS settings (these are s3-ninja defaults)
-BUCKET_HOST=localhost
-BUCKET_PORT=9000
-AWS_REGION=no-where-1
-AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
-AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-# Location of connection backend
-url=connection://localhost:6379
-```
+See `./dev-env` for an annotated list of environment variables.
 
 ## TODO
 
 - Create functioning mock environment for testing
 - Progress report endpoints so end-users can see the state of their videos
 
-## Development
+## Development environment
+
+[`./dev-env`](./dev-env) contains
 
 ```bash
+# Copy development environment variables
+# (assumes you are running toches on localhost:8080)
 cp dev-env .env
-# This will expose a connection frontend at http://localhost:8083
+# This will expose a connection frontend at http://localhost:8081.
 docker-compose up -d
 yarn run dev
-
 ```

@@ -20,6 +20,13 @@ export const setTusHeaders: Middleware = async (ctx, next) => {
   return next()
 }
 
+const setHTTPStatus =
+  (status: number): Middleware =>
+  async (ctx, next) => {
+    ctx.status = status
+    return next()
+  }
+
 const router = new Router()
 
 router.post("/", authenticate({ required: true }), setTusHeaders, uploadCreate)
@@ -29,7 +36,7 @@ router.head(
   authenticate({ required: true }),
   setTusHeaders,
   uploadGet,
-  uploadSend
+  uploadSend,
 )
 
 router.patch(
@@ -37,9 +44,9 @@ router.patch(
   authenticate({ required: true }),
   uploadGet,
   uploadPatch,
-  ingestVideo
+  ingestVideo,
 )
 
-router.options("/", setTusHeaders)
+router.options("/", setTusHeaders, setHTTPStatus(204))
 
 export { router as videoRouter }

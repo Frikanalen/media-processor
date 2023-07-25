@@ -10,9 +10,9 @@ services:
     environment:
       - REDIS_HOSTS=local:connection:6379
     ports:
-      - "8083:8081"
+      - "8180:8081"
 
-  s3-backend:
+  s3:
     image: scireum/s3-ninja
     ports:
       - "9000:9000"

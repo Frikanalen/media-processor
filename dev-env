@@ -1,8 +1,24 @@
-FK_API_KEY=1234
+# This file assumes you are running toches locally, but with S3 and Redis
+# from the docker-compose.
+#
+# If you are running toches in a container, you will need to change FK_API to eg.
+# FK_API=http://toches:8080
 FK_API=http://localhost:8080
-BUCKET_HOST=localhost
-BUCKET_PORT=9000
+
+# Downstream services use an internal API key to authenticate
+# against our back-end service. In production this comes from
+# a Kubernetes secret, in development "1234" is used.
+FK_API_KEY=1234
+
+# TODO: Figure out if we can remove this.
+# "no-where-1" was chosen to make it obvious that this is not a real region.
 AWS_REGION=no-where-1
+
+# s3ninja default credentials
 AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
 AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-url=connection://localhost:6379
+
+# s3 emulator and redis instance from docker-compose
+AWS_ENDPOINT_HOST=s3
+AWS_ENDPOINT_PORT=9000
+REDIS_URL=redis://redis:6379
