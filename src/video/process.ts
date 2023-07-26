@@ -1,192 +1,156 @@
-import { unlink } from "fs/promises"
 import { getLocator } from "./getLocator.js"
 import { grabStill } from "./grabStill.js"
 import { ThumbnailDescriptors } from "./thumbnailDescriptors.js"
 import type { VideoJob } from "./types.js"
 import { log } from "../log.js"
 import { MediaService } from "../generated/index.js"
-import { FK_API_KEY } from "../constants.js"
+import { FK_API_KEY } from "../config"
 import fs from "fs"
 import { s3Client } from "../s3Client.js"
+import type { VideoTranscoder } from "./getVideoDescriptors.js"
 import { VideoDescriptors } from "./getVideoDescriptors.js"
-import { toWebP } from "../transcode/toWebP.js"
-import type { TranscoderOutputFile } from "../transcode/types.js"
+import type { Transcoder, TranscoderOutputFile } from "./transcode/types.js"
+import { makeThumbnail } from "./makeThumbnail"
+import { store } from "./helpers/store"
+import { register } from "./helpers/register"
+import { tempDir } from "./helpers/tempDir"
+import { cleanupFiles } from "./helpers/cleanupFiles"
 
-const makeThumbnails = (job: VideoJob) =>
-  Object.entries(ThumbnailDescriptors).map(async ([thumbType, dimensions]) => {
-    try {
-      const { width, height } = dimensions
-      const Bucket = "media"
-      const { key, pathToStill, mediaId } = job.data
-      const outputDir = `tmp-upload/${job.id}_${thumbType}`
-
-      fs.mkdirSync(outputDir)
-
-      log.info(`Generating thumbnail ${thumbType}`)
-
-      const result = await toWebP({
-        onProgress: (progress) => {
-          log.debug(`${progress}%`)
-        },
-        inputPath: pathToStill!,
-        outputDir,
-        width,
-        height,
-      })
-
-      await s3Client.putObject({
-        Bucket,
-        Key: `${key}/${thumbType}`,
-        Body: await fs.createReadStream(result.asset.path),
-        ContentType: result.asset.mime,
-      })
-
-      await fs.rmSync(outputDir, { recursive: true })
-
-      await MediaService.postVideosMediaAssets(mediaId, FK_API_KEY, {
-        type: thumbType,
-        metadata: dimensions,
-        locator: getLocator("S3", Bucket, key, thumbType),
-      })
-    } catch (error) {
-      log.error(`Error generating thumbnail ${thumbType}:`, error)
-      throw error
-    }
-  })
-
-const uploadAndRegisterAsset = async (
-  asset: TranscoderOutputFile,
-  mediaId: number,
-  name: string,
-  bucket: string,
-  key: string
-) => {
-  await s3Client.putObject({
-    Bucket: bucket,
-    Key: `${key}/${name}`,
-    Body: await fs.createReadStream(asset.path),
-    ContentType: asset.mime,
-  })
-
-  await MediaService.postVideosMediaAssets(mediaId, FK_API_KEY, {
-    type: name,
-    metadata: {},
-    locator: getLocator("S3", "media", key, name),
-  })
-}
+export const Bucket = "media"
 
 const uploadAndRegisterSubfiles = async (
   subfiles: TranscoderOutputFile[],
+  job: VideoJob,
   tempDir: string,
-  mediaId: number,
-  name: string,
-  bucket: string,
-  key: string
+  type: string,
 ) => {
-  const substreams = subfiles.flatMap((segment) =>
+  const { mediaId, uploadId } = job.data
+
+  const substreams = subfiles.flatMap(({ path, mime }) =>
     s3Client.putObject({
-      Bucket: bucket,
-      Key: `${key}/${name}/${segment.path}`,
-      Body: fs.createReadStream(`${tempDir}/${segment.path}`),
-      ContentType: segment.mime,
-    })
+      Bucket,
+      Key: `${uploadId}/${type}/${path}`,
+      Body: fs.createReadStream(`${tempDir}/${path}`),
+      ContentType: mime,
+    }),
   )
 
   await Promise.all(substreams)
 
   await MediaService.postVideosMediaAssets(mediaId, FK_API_KEY, {
-    type: name,
+    type,
     metadata: {},
-    locator: getLocator("S3", "media", key, "hls/manifest.m3u8"),
+    locator: getLocator("S3", Bucket, uploadId, "hls/manifest.m3u8"),
   })
 }
 
+const processAsset = async (
+  outputFormat: VideoTranscoder,
+  transcode: Transcoder,
+  job: VideoJob,
+  onProgress: (progress: number) => void,
+) => {
+  if (!job.id) throw new Error("Job has no ID")
+
+  const { pathToVideo: inputPath, mediaId, uploadId } = job.data
+  const outputDir = tempDir(uploadId, outputFormat)
+
+  log.info(`Generating asset ${outputFormat}`, { uploadId })
+
+  const { asset, subfiles } = await transcode({
+    onProgress,
+    inputPath,
+    outputDir,
+  })
+
+  await store(uploadId, outputFormat, asset)
+  await register(uploadId, outputFormat, mediaId)
+
+  if (subfiles)
+    await uploadAndRegisterSubfiles(subfiles, job, outputDir, outputFormat)
+
+  fs.rmSync(outputDir, { recursive: true })
+}
+
+const handleProgress = async (
+  progress: number,
+  assetIndex: number,
+  assetProgress: number[],
+  job: VideoJob,
+) => {
+  // Update the progress of the specific asset
+  assetProgress[assetIndex] = progress
+
+  // Average progress of all assets
+  const totalProgress =
+    assetProgress.reduce((sum, curr) => sum + curr, 0) / assetProgress.length
+
+  // Update the job progress
+  await job.updateProgress(totalProgress)
+}
+
+const makeThumbnails = async (job: VideoJob) => {
+  if (!job.data.pathToStill) job.data.pathToStill = await makeStill(job)
+
+  await Promise.all(
+    Object.entries(ThumbnailDescriptors).map(
+      async ([thumbType, dimensions]) => {
+        try {
+          await makeThumbnail(job, thumbType, dimensions)
+        } catch (error) {
+          log.error(`Error generating thumbnail ${thumbType}:`, error)
+          throw error
+        }
+      },
+    ),
+  )
+}
 export const process = async (job: VideoJob) => {
   try {
-    const bucket = "media"
-    const { key, pathToVideo, mediaId } = job.data
+    const { pathToStill, pathToVideo, mediaId } = job.data
     const finished = job.data.finished ?? []
 
     log.info(`Processing start for mediaId ${mediaId}`)
 
-    const pathToStill = job.data.pathToStill ?? (await makeStill(job))
-
-    await Promise.all(makeThumbnails(job))
+    await makeThumbnails(job)
 
     // Filter out already finished descriptors
     const pendingAssets = VideoDescriptors.filter(
-      ({ name }) => !finished.includes(name)
+      ({ name }) => !finished.includes(name),
     )
 
     const assetProgress: number[] = new Array(pendingAssets.length).fill(0)
-
-    const handleProgress = (progress: number, assetIndex: number) => {
-      // Update the progress of the specific asset
-      assetProgress[assetIndex] = progress
-
-      // Calculate the average progress of all assets
-      const totalProgress =
-        assetProgress.reduce((sum, curr) => sum + curr, 0) /
-        pendingAssets.length
-
-      // Update the job progress
-      job.progress(totalProgress)
-    }
 
     // Map all transcoding jobs into a concurrent list of promises
     const transcodingProcesses = pendingAssets.map(
       async ({ name, transcode }, assetIndex) => {
         try {
-          const tempDir = `tmp-upload/${job.id}_${name}`
-
-          fs.mkdirSync(tempDir)
-
-          log.info(`Generating asset ${name}`)
-
-          const { asset, subfiles } = await transcode({
-            onProgress: (progress) => handleProgress(progress, assetIndex),
-            inputPath: pathToVideo,
-            outputDir: tempDir,
-          })
-
-          await uploadAndRegisterAsset(asset, mediaId, name, bucket, key)
-
-          if (subfiles) {
-            await uploadAndRegisterSubfiles(
-              subfiles,
-              tempDir,
-              mediaId,
-              name,
-              bucket,
-              key
-            )
-          }
-
-          fs.rmSync(tempDir, { recursive: true })
+          await processAsset(name, transcode, job, (progress: number) =>
+            handleProgress(progress, assetIndex, assetProgress, job),
+          )
 
           finished.push(name)
 
-          await job.update({ ...job.data, finished })
+          await job.updateData({ ...job.data, finished })
         } catch (error: any) {
           log.error(`Error generating asset ${name}:`, error)
-          await job.update({
+          await job.updateData({
             ...job.data,
             error: `Error generating asset ${name}: ${error.message}`,
           })
           throw error
         }
-      }
+      },
     )
 
     await Promise.all(transcodingProcesses)
 
     log.info(`Processing finished for mediaId ${mediaId}, cleaning up`)
 
-    await unlink(pathToVideo)
-    await unlink(pathToStill)
+    await cleanupFiles([pathToVideo, pathToStill!])
   } catch (error: any) {
     log.error(`Error processing job for mediaId ${job.data.mediaId}:`, error)
-    await job.update({
+    await job.updateData({
       ...job.data,
       error: `Error processing job for mediaId ${job.data.mediaId}: ${error.message}`,
     })
@@ -205,8 +169,7 @@ const makeStill = async (job: VideoJob) => {
   const seek = Math.floor((duration ?? 0) * 0.3333)
 
   const pathToStill = await grabStill(pathToVideo, seek)
-  console.log("done", pathToStill)
-  await job.update({ ...job.data, pathToStill })
+  await job.updateData({ ...job.data, pathToStill })
 
   return pathToStill
 }

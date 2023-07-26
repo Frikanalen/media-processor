@@ -8,7 +8,7 @@ services:
   redis-gui:
     image: rediscommander/redis-commander
     environment:
-      - REDIS_HOSTS=local:connection:6379
+      - REDIS_HOSTS=local:redis:6379
     ports:
       - "8180:8081"
 
@@ -16,3 +16,24 @@ services:
     image: scireum/s3-ninja
     ports:
       - "9000:9000"
+
+  tusd:
+    image: tusproject/tusd
+    volumes:
+      - ./tmp-upload:/srv/tusd-data/data
+    entrypoint: ["tusd"]
+    command: [
+    "-hooks-http", "http://localhost:8001/tusd-hooks",
+    "-hooks-http-forward-headers", "Authorization",
+    "-behind-proxy",
+    "-hooks-enabled-events", "pre-finish",
+    ]
+    network_mode: host
+
+  nginx:
+    build:
+      context: nginxKludge
+      dockerfile: Dockerfile.nginx
+    depends_on:
+      - tusd
+    network_mode: host

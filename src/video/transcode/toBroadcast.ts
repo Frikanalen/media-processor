@@ -1,5 +1,5 @@
 import ffmpeg from "fluent-ffmpeg"
-import type { Transcoder } from "./types.js"
+import type { Transcoder } from "./types"
 
 export const toBroadcast: Transcoder = async (options) => {
   const { inputPath, outputDir, onProgress } = options
@@ -20,9 +20,9 @@ export const toBroadcast: Transcoder = async (options) => {
       .size("1280x720")
       .autopad(true)
 
-    broadcast.on("progress", (progress) => onProgress(progress.percent))
+    broadcast.on("progress", ({ percent }) => onProgress(percent))
     broadcast.on("end", () =>
-      resolve({ asset: { path: outputPath, mime: "application/mxf" } })
+      resolve({ asset: { path: outputPath, mime: "application/mxf" } }),
     )
     broadcast.on("error", (e) => reject(e))
     broadcast.run()

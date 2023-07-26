@@ -1,5 +1,5 @@
 import ffmpeg from "fluent-ffmpeg"
-import type { Transcoder } from "./types.js"
+import type { Transcoder } from "./types"
 
 export const toWebM: Transcoder = async (options) => {
   const { inputPath, outputDir, onProgress } = options
@@ -23,7 +23,7 @@ export const toWebM: Transcoder = async (options) => {
 
     webm.on("progress", (progress) => onProgress(progress.percent))
     webm.on("end", () =>
-      resolve({ asset: { path: outputPath, mime: "video/webm" } })
+      resolve({ asset: { path: outputPath, mime: "video/webm" } }),
     )
     webm.on("error", (e) => reject(e))
 

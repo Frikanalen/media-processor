@@ -1,6 +1,6 @@
 import { execSync } from "child_process"
 import type { FfprobeData, FfprobeStream } from "fluent-ffmpeg"
-import { probeVideo } from "./probeVideo.js"
+import { probeFile } from "./probeFile"
 import { log } from "../log.js"
 
 export type VideoStats = {
@@ -40,7 +40,7 @@ export type VideoMetadata = {
 const getVideoQuality = (
   width: number,
   height: number,
-  isInterlaced: boolean
+  isInterlaced: boolean,
 ): string => {
   const progressiveSuffix = isInterlaced ? "i" : "p"
 
@@ -90,7 +90,7 @@ const getVideoStats = (streams: FfprobeStream[]): VideoStats => {
   const videoQuality = getVideoQuality(
     videoStream.width,
     videoStream.height,
-    isInterlaced
+    isInterlaced,
   )
 
   return {
@@ -144,13 +144,19 @@ const getAudioQuality = (channels: number): string => {
   }
 }
 
-
 export const getVideoMetadata = async (
-  path: string
+  path: string,
 ): Promise<VideoMetadataV2 | undefined> => {
   log.info(`Running ffprobe on "${path}"`)
 
-  const probed = await probeVideo(path)
+  let probed: FfprobeData
+
+  try {
+    probed = await probeFile(path)
+  } catch (err) {
+    log.error(`ffprobe failed: ${err}`)
+    return undefined
+  }
   const mime = execSync(`file -b --mime-type ${path}`).toString().trim()
 
   if (probed.streams.length < 1) {
@@ -171,10 +177,9 @@ export const getVideoMetadata = async (
   if (probed.format.duration === undefined) {
     log.error("Duration is not available!")
     return undefined
-
   }
 
-  if (probed.format.duration as unknown as string === "N/A") {
+  if ((probed.format.duration as unknown as string) === "N/A") {
     log.error("Duration is not available!")
     return undefined
   }

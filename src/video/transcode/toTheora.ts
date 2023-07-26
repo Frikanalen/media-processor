@@ -1,5 +1,5 @@
 import ffmpeg from "fluent-ffmpeg"
-import type { Transcoder } from "./types.js"
+import type { Transcoder } from "./types"
 
 export const toTheora: Transcoder = async (options) => {
   const { inputPath, outputDir, onProgress } = options
@@ -17,7 +17,7 @@ export const toTheora: Transcoder = async (options) => {
 
     theora.on("progress", (progress) => onProgress(progress.percent))
     theora.on("end", () =>
-      resolve({ asset: { path: outputPath, mime: "video/ogg" } })
+      resolve({ asset: { path: outputPath, mime: "video/ogg" } }),
     )
     theora.on("error", (e) => reject(e))
     theora.run()

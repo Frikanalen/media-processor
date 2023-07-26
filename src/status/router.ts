@@ -1,5 +1,4 @@
 import type { Context, Next } from "koa"
-import { videoQueue } from "../video/queue.js"
 import { PassThrough } from "stream"
 
 const streamEventsMode = async (ctx: Context) => {
@@ -21,6 +20,7 @@ const streamEventsMode = async (ctx: Context) => {
  * HTTP Event Stream showing the progress of the encoding job
  *
  * @param prefix URL prefix
+ * @deprecated The code as it stands is vestigial and should be replaced
  */
 export const statusUpdate =
   (prefix: string) => async (ctx: Context, next: Next) => {
@@ -31,21 +31,20 @@ export const statusUpdate =
 
     await streamEventsMode(ctx)
 
-    const responseStream = new PassThrough()
-    ctx.response.body = responseStream
+    ctx.response.body = new PassThrough()
 
-    const job = await videoQueue.getJob(jobId)
-    if (job === null) return ctx.throw(404, "job_does_not_exist")
-
-    const response = {
-      jobId,
-      progress: job.progress(),
-    }
-
-    responseStream.write("event: name\n")
-    responseStream.write(`data: ${JSON.stringify(response)}\n\n`)
-
-    if (await job.finished()) responseStream.end()
+    //const job = await videoQueue.getJob(`${jobId}`)
+    //if (!job) return ctx.throw(404, "job_does_not_exist")
+    //
+    //const response = {
+    //  jobId,
+    //  progress: job.progress(),
+    //}
+    //
+    //responseStream.write("event: name\n")
+    //responseStream.write(`data: ${JSON.stringify(response)}\n\n`)
+    //
+    //if (await job) responseStream.end()
 
     return next()
   }

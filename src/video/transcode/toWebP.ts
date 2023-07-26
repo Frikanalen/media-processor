@@ -1,6 +1,6 @@
-import type { Transcoder } from "./types.js"
+import type { Transcoder } from "./types"
 import sharp from "sharp"
-import type { ThumbnailSettings } from "../video/thumbnailDescriptors.js"
+import type { ThumbnailSettings } from "../thumbnailDescriptors"
 
 export const toWebP: Transcoder<ThumbnailSettings> = async (options) => {
   const { inputPath, outputDir, onProgress, width, height } = options

@@ -1,17 +1,16 @@
 import "dotenv/config"
 
-import { connection } from "./upload/redis/connection.js"
 import Koa from "koa"
 import bodyParser from "koa-bodyparser"
 import { handleError } from "./middleware/handleError.js"
-//import { sendCORSDev } from "./middleware/sendCORSDev.js"
-import { videoRouter } from "./upload/router.js"
 import { log, requestLogger } from "./log.js"
-import { FK_API, FK_API_KEY, IS_PROD, SECRET_KEY_HEADER } from "./constants.js"
+import { FK_API, FK_API_KEY, IS_PROD, SECRET_KEY_HEADER } from "./config"
 import { OpenAPI } from "./generated/index.js"
 import { statusUpdate } from "./status/router.js"
 
 import { showMetrics } from "./metrics.js"
+import { sendCORSDev } from "./middleware/sendCORSDev"
+import { uploadHookRouter } from "./tusHook/router"
 
 OpenAPI.BASE = FK_API
 
@@ -30,13 +29,15 @@ log.info({ IS_PROD })
 app.use(requestLogger())
 app.use(handleError)
 app.use(bodyParser())
-//if (!IS_PROD) app.use(sendCORSDev())
+if (!IS_PROD) {
+  log.warn("Dev mode: Enabling CORS for localhost")
+  app.use(sendCORSDev())
+}
 app.use(showMetrics)
-app.use(videoRouter.prefix("/upload/video").routes())
+app.use(uploadHookRouter.prefix("/tusd-hooks").routes())
 app.use(statusUpdate("/upload/status"))
 
 async function main() {
-  await connection.connect()
   app.listen(port, () => log.info(`media-processor listening on port ${port}`))
 }
 

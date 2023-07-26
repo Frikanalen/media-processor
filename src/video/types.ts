@@ -1,14 +1,14 @@
-import type { Job } from "bull"
-import type { VideoTranscoders } from "./getVideoDescriptors.js"
+import type { Job } from "bullmq"
+import type { VideoTranscoder } from "./getVideoDescriptors.js"
 import type { VideoMetadataV2 } from "./getVideoMetadata.js"
 
 export type VideoJobData = {
-  key: string
+  uploadId: string
   pathToVideo: string
   pathToStill?: string
   metadata: VideoMetadataV2
   mediaId: number
-  finished?: VideoTranscoders[]
+  finished?: VideoTranscoder[]
   error?: string
 }
 

@@ -1,6 +1,7 @@
 import type { Middleware } from "koa"
 import axios from "axios"
-import { FK_API, FK_API_KEY, SECRET_KEY_HEADER } from "../constants.js"
+import { FK_API, FK_API_KEY, SECRET_KEY_HEADER } from "../config"
+import { log } from "../log"
 
 export type AuthUser = {
   id: number
@@ -16,6 +17,7 @@ export type AuthState = {
 
 export type Options = {
   required?: true
+  cookieGetter?: (ctx: any) => string
 }
 
 // TODO: Some caching might be in order here, so that we don't hammer the API
@@ -23,8 +25,8 @@ export type Options = {
 export const authenticate =
   (options: Options): Middleware<AuthState> =>
   async (ctx, next) => {
-    const { required } = options
-    const cookie = ctx.get("Cookie")
+    const { required, cookieGetter } = options
+    const cookie = cookieGetter ? cookieGetter(ctx) : ctx.get("Cookie")
 
     const { data, status } = await axios.get<AuthData>("/auth/user", {
       baseURL: FK_API,
@@ -39,6 +41,7 @@ export const authenticate =
     if (status !== 200) return ctx.throw(500, "auth_server_error")
 
     if (!data.user) {
+      log.info(data.user)
       if (required) return ctx.throw(401)
     } else {
       ctx.state.user = data.user

@@ -1,6 +1,6 @@
 import { Logger } from "tslog"
 import type { ILogObj } from "tslog"
-import { IS_PROD } from "./constants.js"
+import { IS_PROD } from "./config"
 import type { Middleware } from "koa"
 
 const LogLevels = [
@@ -14,7 +14,7 @@ const LogLevels = [
 ] as const
 
 export const getLogLevel = (): number => {
-  const LOG_LEVEL = process.env["LOG_LEVEL"] as
+  const LOG_LEVEL = process.env["LOG_LEVEL"]?.toUpperCase() as
     | (typeof LogLevels)[number]
     | undefined
 

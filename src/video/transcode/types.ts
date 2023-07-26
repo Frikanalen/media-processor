@@ -1,7 +1,7 @@
 export type TranscoderOptions = {
   inputPath: string // Input file spec
   outputDir: string // Base temporary directory
-  onProgress: (value: number) => void
+  onProgress: (percent: number) => void
 }
 
 export type TranscoderOutputFile = {
@@ -15,5 +15,5 @@ export type TranscoderResult = {
 }
 
 export type Transcoder<ExtraOptions = {}, ExtraResults = {}> = (
-  options: TranscoderOptions & ExtraOptions
+  options: TranscoderOptions & ExtraOptions,
 ) => Promise<TranscoderResult & ExtraResults>
