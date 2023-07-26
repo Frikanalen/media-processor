@@ -1,6 +1,6 @@
 import { execSync } from "child_process"
 import type { FfprobeData, FfprobeStream } from "fluent-ffmpeg"
-import { probeFile } from "./probeFile"
+import { probeFile } from "./helpers/probeFile"
 import { log } from "../log.js"
 
 export type VideoStats = {

@@ -1,4 +1,4 @@
-import { getLocator } from "./getLocator.js"
+import { getLocator } from "./helpers/getLocator"
 import { grabStill } from "./grabStill.js"
 import { ThumbnailDescriptors } from "./thumbnailDescriptors.js"
 import type { VideoJob } from "./types.js"

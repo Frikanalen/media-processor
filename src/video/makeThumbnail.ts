@@ -5,7 +5,7 @@ import { toWebP } from "./transcode/toWebP"
 import { s3Client } from "../s3Client"
 import { MediaService } from "../generated"
 import { FK_API_KEY } from "../config"
-import { getLocator } from "./getLocator"
+import { getLocator } from "./helpers/getLocator"
 import { Bucket } from "./process"
 
 export const makeThumbnail = async (

@@ -12,7 +12,7 @@ export const analyze: Middleware<UploadHookState> = async (ctx, next) => {
   log.info(`Analyzing ${Path} for metadata`, { uploadId })
   const stats = await statAsync(Path)
   if (!stats.isFile()) {
-    log.error(`Rejecting ${Path}`, { uploadId })
+    log.error(`Could not find ${Path}`, { uploadId })
     return ctx.throw(400, "Invalid file")
   }
   const metadata = await getVideoMetadata(Path)

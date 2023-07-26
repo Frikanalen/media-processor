@@ -1,16 +1,16 @@
 import { MediaService } from "../../generated"
 import { FK_API_KEY } from "../../config"
-import { getLocator } from "../getLocator"
+import { getLocator } from "./getLocator"
 import { Bucket } from "../process"
+import type { VideoTranscoder } from "../getVideoDescriptors"
 
-export async function register(
+export const register = async (
   uploadId: string,
-  outputFormat: "broadcastable" | "theora" | "webm" | "hls",
+  outputFormat: VideoTranscoder,
   mediaId: number,
-) {
-  await MediaService.postVideosMediaAssets(mediaId, FK_API_KEY, {
+) =>
+  MediaService.postVideosMediaAssets(mediaId, FK_API_KEY, {
     type: outputFormat,
     metadata: {},
     locator: getLocator("S3", Bucket, uploadId, outputFormat),
   })
-}
