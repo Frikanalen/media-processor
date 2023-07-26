@@ -20,7 +20,9 @@ export const toBroadcast: Transcoder = async (options) => {
       .size("1280x720")
       .autopad(true)
 
-    broadcast.on("progress", ({ percent }) => onProgress(percent))
+    broadcast.on("progress", ({ percent }) => {
+      onProgress(percent ?? 0)
+    })
     broadcast.on("end", () =>
       resolve({ asset: { path: outputPath, mime: "application/mxf" } }),
     )

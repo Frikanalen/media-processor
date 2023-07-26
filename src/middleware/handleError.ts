@@ -8,7 +8,8 @@ export const handleError: Middleware = async (context, next) => {
   } catch (error: any) {
     log.error(error)
     if (error instanceof Yup.ValidationError)
-      context.throw(400, "validation_error", { details: error.errors })
+      return context.throw(400, "validation_error", { details: error.errors })
+    throw error
   }
 }
 

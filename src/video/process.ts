@@ -1,5 +1,4 @@
 import { getLocator } from "./helpers/getLocator"
-import { grabStill } from "./grabStill.js"
 import { ThumbnailDescriptors } from "./thumbnailDescriptors.js"
 import type { VideoJob } from "./types.js"
 import { log } from "../log.js"
@@ -15,10 +14,12 @@ import { store } from "./helpers/store"
 import { register } from "./helpers/register"
 import { tempDir } from "./helpers/tempDir"
 import { cleanupFiles } from "./helpers/cleanupFiles"
+import assert from "assert"
+import { makeStill } from "./makeStill"
 
 export const Bucket = "media"
 
-const uploadAndRegisterSubfiles = async (
+const handleSubfiles = async (
   subfiles: TranscoderOutputFile[],
   job: VideoJob,
   tempDir: string,
@@ -26,16 +27,16 @@ const uploadAndRegisterSubfiles = async (
 ) => {
   const { mediaId, uploadId } = job.data
 
-  const substreams = subfiles.flatMap(({ path, mime }) =>
-    s3Client.putObject({
-      Bucket,
-      Key: `${uploadId}/${type}/${path}`,
-      Body: fs.createReadStream(`${tempDir}/${path}`),
-      ContentType: mime,
-    }),
+  await Promise.all(
+    subfiles.flatMap(({ path, mime }) =>
+      s3Client.putObject({
+        Bucket,
+        Key: `${uploadId}/${type}/${path}`,
+        Body: fs.createReadStream(`${tempDir}/${path}`),
+        ContentType: mime,
+      }),
+    ),
   )
-
-  await Promise.all(substreams)
 
   await MediaService.postVideosMediaAssets(mediaId, FK_API_KEY, {
     type,
@@ -48,7 +49,6 @@ const processAsset = async (
   outputFormat: VideoTranscoder,
   transcode: Transcoder,
   job: VideoJob,
-  onProgress: (progress: number) => void,
 ) => {
   if (!job.id) throw new Error("Job has no ID")
 
@@ -58,7 +58,8 @@ const processAsset = async (
   log.info(`Generating asset ${outputFormat}`, { uploadId })
 
   const { asset, subfiles } = await transcode({
-    onProgress,
+    onProgress: (progress: number) =>
+      updateProgress(job, outputFormat, progress),
     inputPath,
     outputDir,
   })
@@ -66,31 +67,15 @@ const processAsset = async (
   await store(uploadId, outputFormat, asset)
   await register(uploadId, outputFormat, mediaId)
 
-  if (subfiles)
-    await uploadAndRegisterSubfiles(subfiles, job, outputDir, outputFormat)
+  if (subfiles) await handleSubfiles(subfiles, job, outputDir, outputFormat)
 
   fs.rmSync(outputDir, { recursive: true })
 }
 
-const handleProgress = async (
-  progress: number,
-  assetIndex: number,
-  assetProgress: number[],
-  job: VideoJob,
-) => {
-  // Update the progress of the specific asset
-  assetProgress[assetIndex] = progress
-
-  // Average progress of all assets
-  const totalProgress =
-    assetProgress.reduce((sum, curr) => sum + curr, 0) / assetProgress.length
-
-  // Update the job progress
-  await job.updateProgress(totalProgress)
-}
-
 const makeThumbnails = async (job: VideoJob) => {
-  if (!job.data.pathToStill) job.data.pathToStill = await makeStill(job)
+  const { mediaId, uploadId } = job.data
+  log.debug(`Making thumbnails for ${mediaId} (${uploadId})`)
+  if (!job.data.pathToStill) await makeStill(job)
 
   await Promise.all(
     Object.entries(ThumbnailDescriptors).map(
@@ -105,71 +90,63 @@ const makeThumbnails = async (job: VideoJob) => {
     ),
   )
 }
-export const process = async (job: VideoJob) => {
+
+export const updateProgress = async (
+  job: VideoJob,
+  taskName: VideoTranscoder,
+  percent: number,
+) => {
   try {
-    const { pathToStill, pathToVideo, mediaId } = job.data
-    const finished = job.data.finished ?? []
-
-    log.info(`Processing start for mediaId ${mediaId}`)
-
-    await makeThumbnails(job)
-
-    // Filter out already finished descriptors
-    const pendingAssets = VideoDescriptors.filter(
-      ({ name }) => !finished.includes(name),
+    assert(
+      percent >= 0 && percent <= 100,
+      `Progress is ${percent}, must be between 0 and 100`,
     )
-
-    const assetProgress: number[] = new Array(pendingAssets.length).fill(0)
-
-    // Map all transcoding jobs into a concurrent list of promises
-    const transcodingProcesses = pendingAssets.map(
-      async ({ name, transcode }, assetIndex) => {
-        try {
-          await processAsset(name, transcode, job, (progress: number) =>
-            handleProgress(progress, assetIndex, assetProgress, job),
-          )
-
-          finished.push(name)
-
-          await job.updateData({ ...job.data, finished })
-        } catch (error: any) {
-          log.error(`Error generating asset ${name}:`, error)
-          await job.updateData({
-            ...job.data,
-            error: `Error generating asset ${name}: ${error.message}`,
-          })
-          throw error
-        }
-      },
-    )
-
-    await Promise.all(transcodingProcesses)
-
-    log.info(`Processing finished for mediaId ${mediaId}, cleaning up`)
-
-    await cleanupFiles([pathToVideo, pathToStill!])
-  } catch (error: any) {
-    log.error(`Error processing job for mediaId ${job.data.mediaId}:`, error)
-    await job.updateData({
-      ...job.data,
-      error: `Error processing job for mediaId ${job.data.mediaId}: ${error.message}`,
-    })
-    throw error
+  } catch (error) {
+    log.error(`Error updating progress for ${taskName}: ${error}`)
   }
+
+  await job.updateData({
+    ...job.data,
+    progress: { ...job.data.progress, [taskName]: percent },
+    finished:
+      percent == 100 ? [...job.data.finished, taskName] : job.data.finished,
+  })
+
+  // Calculate average across all tasks
+  const totalProgress =
+    Object.values(job.data.progress).reduce((sum, curr) => sum + curr, 0) /
+    Object.values(job.data.progress).length
+  log.debug(`${taskName}: ${percent}% (total: ${totalProgress})`)
+
+  await job.updateProgress(totalProgress)
 }
-const makeStill = async (job: VideoJob) => {
-  const { pathToVideo, metadata } = job.data
 
-  const { duration } = metadata.probed.format
+export const process = async (job: VideoJob) => {
+  const { pathToStill, pathToVideo, mediaId } = job.data
+  const finished = job.data.finished ?? []
 
-  if (duration === undefined) {
-    log.error(`File upload ${pathToVideo} has no duration!`)
-  }
+  log.info(`Processing start for mediaId ${mediaId}`)
 
-  const seek = Math.floor((duration ?? 0) * 0.3333)
+  await makeThumbnails(job)
 
-  const pathToStill = await grabStill(pathToVideo, seek)
-  await job.updateData({ ...job.data, pathToStill })
+  // Filter out already finished descriptors
+  const pendingAssets = VideoDescriptors.filter(
+    ({ name }) => !finished.includes(name),
+  )
 
-  return pathToStill
+  // Map all transcoding jobs into a list of promises
+  await Promise.all(
+    pendingAssets.map(async (transcodeSpec) => {
+      const { name, transcode } = transcodeSpec
+      try {
+        await processAsset(name, transcode, job)
+      } catch (error: any) {
+        throw new Error(`Error generating asset ${name}: ${error.message}`)
+      }
+    }),
+  )
+
+  log.info(`Processing finished for mediaId ${mediaId}, cleaning up`)
+
+  await cleanupFiles([pathToVideo, pathToStill!])
 }

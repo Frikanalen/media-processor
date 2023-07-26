@@ -1,5 +1,8 @@
-import type { Context, Next } from "koa"
+import type { Context, Middleware } from "koa"
 import { PassThrough } from "stream"
+import Router from "@koa/router"
+import { videoQueue } from "../video/queue"
+import { statusMessageBroker, writeEvent } from "./broker"
 
 const streamEventsMode = async (ctx: Context) => {
   ctx.request.socket.setTimeout(0)
@@ -8,6 +11,8 @@ const streamEventsMode = async (ctx: Context) => {
 
   ctx.respond = true
   ctx.status = 200
+
+  ctx.response.body = new PassThrough()
   ctx.set({
     "Content-Type": "text/event-stream",
     "Cache-Control": "no-cache",
@@ -19,32 +24,31 @@ const streamEventsMode = async (ctx: Context) => {
 /**
  * HTTP Event Stream showing the progress of the encoding job
  *
- * @param prefix URL prefix
- * @deprecated The code as it stands is vestigial and should be replaced
  */
-export const statusUpdate =
-  (prefix: string) => async (ctx: Context, next: Next) => {
-    if (!ctx.path.startsWith(prefix)) return next()
-    const jobId = parseInt(ctx.path.slice(prefix.length + 1))
+export const statusUpdate: Middleware = async (ctx, next) => {
+  const uploadId = ctx["params"].uploadId
 
-    if (isNaN(jobId)) return ctx.throw(401, "missing_or_invalid_jobid")
+  const job = await videoQueue.getJob(uploadId)
 
-    await streamEventsMode(ctx)
+  if (!job) return ctx.throw(404, "job_not_found")
 
-    ctx.response.body = new PassThrough()
+  // FIXME: No user permission checking!
 
-    //const job = await videoQueue.getJob(`${jobId}`)
-    //if (!job) return ctx.throw(404, "job_does_not_exist")
-    //
-    //const response = {
-    //  jobId,
-    //  progress: job.progress(),
-    //}
-    //
-    //responseStream.write("event: name\n")
-    //responseStream.write(`data: ${JSON.stringify(response)}\n\n`)
-    //
-    //if (await job) responseStream.end()
+  await streamEventsMode(ctx)
 
-    return next()
-  }
+  writeEvent(ctx.response.body, {
+    event: "status",
+    data: {
+      mediaId: job.data.mediaId,
+    },
+  })
+
+  statusMessageBroker.registerClient(uploadId, ctx.response.body)
+
+  return next()
+}
+
+const jobStatusRouter = new Router()
+jobStatusRouter.get("/:uploadId", statusUpdate)
+jobStatusRouter.allowedMethods()
+export { jobStatusRouter }

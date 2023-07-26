@@ -8,8 +8,10 @@ export type VideoJobData = {
   pathToStill?: string
   metadata: VideoMetadataV2
   mediaId: number
-  finished?: VideoTranscoder[]
+  finished: VideoTranscoder[]
   error?: string
+  progress: Record<string, number>
+  userId: number
 }
 
 export type VideoJob = Job<VideoJobData>

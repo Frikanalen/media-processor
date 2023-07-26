@@ -7,6 +7,7 @@ import { MediaService } from "../generated"
 import { FK_API_KEY } from "../config"
 import { getLocator } from "./helpers/getLocator"
 import { Bucket } from "./process"
+import { tempDir } from "./helpers/tempDir"
 
 export const makeThumbnail = async (
   job: VideoJob,
@@ -18,11 +19,9 @@ export const makeThumbnail = async (
 
   if (!pathToStill) throw new Error("No input still found")
 
-  const outputDir = `tmp-upload/${job.id}_${thumbType}`
+  const outputDir = tempDir(uploadId, thumbType)
 
-  fs.mkdirSync(outputDir)
-
-  log.info(`Generating thumbnail ${thumbType}`)
+  log.info(`Generating thumbnail ${thumbType} for ${mediaId}`)
 
   const result = await toWebP({
     onProgress: (progress) => {
