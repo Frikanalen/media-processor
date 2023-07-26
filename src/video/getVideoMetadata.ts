@@ -146,43 +146,30 @@ const getAudioQuality = (channels: number): string => {
 
 export const getVideoMetadata = async (
   path: string,
-): Promise<VideoMetadataV2 | undefined> => {
+): Promise<VideoMetadataV2> => {
   log.info(`Running ffprobe on "${path}"`)
 
   let probed: FfprobeData
 
-  try {
-    probed = await probeFile(path)
-  } catch (err) {
-    log.error(`ffprobe failed: ${err}`)
-    return undefined
-  }
+  probed = await probeFile(path)
+
   const mime = execSync(`file -b --mime-type ${path}`).toString().trim()
 
-  if (probed.streams.length < 1) {
-    log.error("No available streams!")
-    return undefined
-  }
+  if (probed.streams.length < 1) throw new Error("No available streams!")
 
   // Despite the typings, "duration" comes back as "N/A" if it's an image
-  if (!probed.format.duration || `${probed.format.duration}` === "N/A") {
-    log.error(`File duration is ${probed.format.duration}`)
-    return undefined
-  }
+  if (!probed.format.duration || `${probed.format.duration}` === "N/A")
+    throw new Error(`File duration is ${probed.format.duration}`)
 
   const videoStats = getVideoStats(probed.streams)
   const audioStats = getAudioStats(probed.streams)
   const duration = parseFloat(`${probed.format.duration}`)
 
-  if (probed.format.duration === undefined) {
-    log.error("Duration is not available!")
-    return undefined
-  }
+  if (probed.format.duration === undefined)
+    throw new Error("Duration is not available!")
 
-  if ((probed.format.duration as unknown as string) === "N/A") {
-    log.error("Duration is not available!")
-    return undefined
-  }
+  if ((probed.format.duration as unknown as string) === "N/A")
+    throw new Error("Duration is not available!")
 
   return {
     mime,
