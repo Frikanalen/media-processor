@@ -1,6 +1,6 @@
 import { Logger } from "tslog"
 import type { ILogObj } from "tslog"
-import { IS_PROD } from "./config"
+import { IS_PROD } from "./config.js"
 import type { Middleware } from "koa"
 
 const LogLevels = [

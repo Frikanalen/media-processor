@@ -1,13 +1,13 @@
-import type { VideoJob } from "./types"
+import type { VideoJob } from "./types.js"
 import fs from "fs"
-import { log } from "../log"
-import { toWebP } from "./transcode/toWebP"
-import { s3Client } from "../s3Client"
-import { MediaService } from "../generated"
-import { FK_API_KEY } from "../config"
-import { getLocator } from "./helpers/getLocator"
-import { Bucket } from "./process"
-import { tempDir } from "./helpers/tempDir"
+import { log } from "../log.js"
+import { toWebP } from "./transcode/toWebP.js"
+import { s3Client } from "../s3Client.js"
+import { MediaService } from "../generated/index.js"
+import { FK_API_KEY } from "../config.js"
+import { getLocator } from "./helpers/getLocator.js"
+import { Bucket } from "./process.js"
+import { tempDir } from "./helpers/tempDir.js"
 
 export const makeThumbnail = async (
   job: VideoJob,

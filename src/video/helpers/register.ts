@@ -1,8 +1,8 @@
-import { MediaService } from "../../generated"
-import { FK_API_KEY } from "../../config"
-import { getLocator } from "./getLocator"
-import { Bucket } from "../process"
-import type { VideoTranscoder } from "../getVideoDescriptors"
+import { MediaService } from "../../generated/index.js"
+import { FK_API_KEY } from "../../config.js"
+import { getLocator } from "./getLocator.js"
+import { Bucket } from "../process.js"
+import type { VideoTranscoder } from "../getVideoDescriptors.js"
 
 export const register = async (
   uploadId: string,

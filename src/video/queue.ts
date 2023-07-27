@@ -1,10 +1,10 @@
 import { Queue, QueueEvents, Worker } from "bullmq"
 import type { VideoJob, VideoJobData } from "./types.js"
 import { process } from "./process.js"
-import { log } from "../log"
+import { log } from "../log.js"
 import IORedis from "ioredis"
-import { REDIS_URL } from "../config"
-import { statusMessageBroker } from "../status/broker"
+import { REDIS_URL } from "../config.js"
+import { statusMessageBroker } from "../status/broker.js"
 
 const connection = new IORedis(REDIS_URL)
 

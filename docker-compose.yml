@@ -23,7 +23,7 @@ services:
       - ./tmp-upload:/srv/tusd-data/data
     entrypoint: ["tusd"]
     command: [
-    "-hooks-http", "http://localhost:8001/tusd-hooks",
+    "-hooks-http", "http://localhost:8002/tusd-hooks",
     "-hooks-http-forward-headers", "Authorization",
     "-behind-proxy",
     "-hooks-enabled-events", "pre-finish",

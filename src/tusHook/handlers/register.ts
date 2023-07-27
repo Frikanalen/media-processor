@@ -1,7 +1,7 @@
 import type { Middleware } from "koa"
-import type { UploadHookState } from "../types"
-import { log } from "../../log"
-import { registerMedia } from "../helpers/registerMedia"
+import type { UploadHookState } from "../types.js"
+import { log } from "../../log.js"
+import { registerMedia } from "../helpers/registerMedia.js"
 
 // Register the received and validated file in the database
 export const register: Middleware<UploadHookState> = async (ctx, next) => {

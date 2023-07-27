@@ -1,5 +1,5 @@
-import type { VideoMetadataV2 } from "../video/getVideoMetadata"
-import type { AuthState } from "../middleware/authenticate"
+import type { VideoMetadataV2 } from "../video/getVideoMetadata.js"
+import type { AuthState } from "../middleware/authenticate.js"
 
 export type UploadHookState = {
   // Local path to received upload

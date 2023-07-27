@@ -1,12 +1,12 @@
 import Router from "@koa/router"
-import { authenticate } from "../middleware/authenticate"
-import type { UploadHookState } from "./types"
-import { ingest } from "./handlers/ingest"
-import { register } from "./handlers/register"
-import { analyze } from "./handlers/analyze"
-import { parseRequest } from "./helpers/parseRequest"
-import { store } from "./handlers/store"
-import { log } from "../log"
+import { authenticate } from "../middleware/authenticate.js"
+import type { UploadHookState } from "./types.js"
+import { ingest } from "./handlers/ingest.js"
+import { register } from "./handlers/register.js"
+import { analyze } from "./handlers/analyze.js"
+import { parseRequest } from "./helpers/parseRequest.js"
+import { store } from "./handlers/store.js"
+import { log } from "../log.js"
 
 // HTTP hooks for tusd
 const uploadHookRouter = new Router<UploadHookState>()

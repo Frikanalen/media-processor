@@ -1,5 +1,5 @@
 import { unlink } from "fs/promises"
-import { log } from "../../log"
+import { log } from "../../log.js"
 
 /**
  * Delete files.

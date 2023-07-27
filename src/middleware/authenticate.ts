@@ -1,7 +1,7 @@
 import type { Middleware } from "koa"
 import axios from "axios"
-import { FK_API, FK_API_KEY, SECRET_KEY_HEADER } from "../config"
-import { log } from "../log"
+import { FK_API, FK_API_KEY, SECRET_KEY_HEADER } from "../config.js"
+import { log } from "../log.js"
 
 export type AuthUser = {
   id: number

@@ -4,7 +4,8 @@ import { Gauge, register } from "prom-client"
 import type { Middleware } from "koa"
 import { log } from "./log.js"
 import IORedis from "ioredis"
-import { REDIS_URL } from "./config"
+import { REDIS_URL } from "./config.js"
+import Router from "@koa/router"
 const connection = new IORedis(REDIS_URL)
 
 const queue = new Queue<VideoJobData>("video-processing", { connection })
@@ -62,11 +63,13 @@ const processQueueFailed = new Gauge({
     processQueueFailed.set(failed)
   },
 })
-export const showMetrics: Middleware = async (ctx, next) => {
-  if (ctx.path !== "/metrics") await next()
-  else {
-    log.debug(`Giving metrics response`)
-    ctx.set("Content-Type", register.contentType)
-    ctx.body = register.metrics()
-  }
+export const sendPrometheusMetrics: Middleware = async (ctx, next) => {
+  log.debug(`Giving metrics response`)
+  ctx.set("Content-Type", register.contentType)
+  ctx.body = register.metrics()
+  return next()
 }
+
+const metricsRouter = new Router()
+metricsRouter.get("/", sendPrometheusMetrics)
+export { metricsRouter }

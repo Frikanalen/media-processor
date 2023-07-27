@@ -1,8 +1,8 @@
 import type { Context, Middleware } from "koa"
 import { PassThrough } from "stream"
 import Router from "@koa/router"
-import { videoQueue } from "../video/queue"
-import { statusMessageBroker, writeEvent } from "./broker"
+import { videoQueue } from "../video/queue.js"
+import { statusMessageBroker, writeEvent } from "./broker.js"
 
 const streamEventsMode = async (ctx: Context) => {
   ctx.request.socket.setTimeout(0)

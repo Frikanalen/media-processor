@@ -1,7 +1,7 @@
 import type { Middleware } from "koa"
-import type { UploadHookState } from "../types"
-import { UploadObjectSchema } from "../schema"
-import { MEDIA_BUCKET, TEMP_UPLOAD_FOLDER } from "../../config"
+import type { UploadHookState } from "../types.js"
+import { UploadObjectSchema } from "../schema.js"
+import { MEDIA_BUCKET, TEMP_UPLOAD_FOLDER } from "../../config.js"
 import path from "path"
 
 export const parseRequest: Middleware<UploadHookState> = async (ctx, next) => {

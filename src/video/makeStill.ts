@@ -1,6 +1,6 @@
 import type { VideoJob } from "./types"
 import assert from "assert"
-import { log } from "../log"
+import { log } from "../log.js"
 import { basename } from "path"
 import ffmpeg from "fluent-ffmpeg"
 

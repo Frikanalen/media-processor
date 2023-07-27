@@ -1,7 +1,7 @@
 import type { Middleware } from "koa"
-import type { UploadHookState } from "../types"
-import { getVideoMetadata } from "../../video/getVideoMetadata"
-import { log } from "../../log"
+import type { UploadHookState } from "../types.js"
+import { getVideoMetadata } from "../../video/getVideoMetadata.js"
+import { log } from "../../log.js"
 
 // Analyze the received file to extract metadata
 export const analyze: Middleware<UploadHookState> = async (ctx, next) => {

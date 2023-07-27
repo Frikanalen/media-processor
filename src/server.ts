@@ -4,13 +4,13 @@ import Koa from "koa"
 import bodyParser from "koa-bodyparser"
 import { handleError } from "./middleware/handleError.js"
 import { log, requestLogger } from "./log.js"
-import { FK_API, FK_API_KEY, IS_PROD, SECRET_KEY_HEADER } from "./config"
+import { FK_API, FK_API_KEY, IS_PROD, SECRET_KEY_HEADER } from "./config.js"
 import { OpenAPI } from "./generated/index.js"
 import { jobStatusRouter } from "./status/router.js"
 
-import { showMetrics } from "./metrics.js"
-import { sendCORSDev } from "./middleware/sendCORSDev"
-import { uploadHookRouter } from "./tusHook/router"
+import { metricsRouter } from "./metrics.js"
+import { sendCORSDev } from "./middleware/sendCORSDev.js"
+import { uploadHookRouter } from "./tusHook/router.js"
 
 OpenAPI.BASE = FK_API
 
@@ -20,25 +20,43 @@ OpenAPI.HEADERS = async (r) => {
     "X-CSRF-Token": r?.cookies?.["fk-csrf"] ?? "",
   }
 }
-const port = Number(process.env["PORT"]) || 8001
+// Defining port numbers for the public-facing and internal applications
+const publicPort = Number(process.env["PORT"]) || 8001
+const internalPort = Number(process.env["INTERNAL_PORT"]) || 8002
 
-const app = new Koa()
+// Instantiating Koa for the public-facing application
+const appPublic = new Koa()
 
-log.info({ IS_PROD })
+// Instantiating Koa for the internal application
+const appInternal = new Koa()
 
-app.use(requestLogger())
-app.use(handleError)
-app.use(bodyParser())
+// Setting up middleware for the public-facing application
+appPublic.use(requestLogger())
+appPublic.use(handleError)
+appPublic.use(bodyParser())
 if (!IS_PROD) {
   log.warn("Dev mode: Enabling CORS for localhost")
-  app.use(sendCORSDev())
+  appPublic.use(sendCORSDev())
 }
-app.use(showMetrics)
-app.use(uploadHookRouter.prefix("/tusd-hooks").routes())
-app.use(jobStatusRouter.prefix("/status").routes())
+appPublic.use(jobStatusRouter.prefix("/status").routes()) // public-facing routes
+
+// Setting up middleware for the internal application
+appInternal.use(requestLogger())
+appInternal.use(handleError)
+appInternal.use(bodyParser())
+appInternal.use(metricsRouter.prefix("/metrics").routes())
+appInternal.use(uploadHookRouter.prefix("/tusd-hooks").routes())
 
 async function main() {
-  app.listen(port, () => log.info(`media-processor listening on port ${port}`))
+  log.info(`starting services`)
+
+  appPublic.listen(publicPort, () =>
+    log.info(`public API listening on :${publicPort}`),
+  )
+
+  appInternal.listen(internalPort, () =>
+    log.info(`internal API listening on :${internalPort}`),
+  )
 }
 
 main().catch(console.error)

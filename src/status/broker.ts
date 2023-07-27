@@ -1,5 +1,5 @@
 import type { Transform } from "stream"
-import { log } from "../log"
+import { log } from "../log.js"
 
 type EventName = "status" | "progress" | "completed" | "failed"
 

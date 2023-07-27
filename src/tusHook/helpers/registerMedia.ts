@@ -1,7 +1,7 @@
-import type { VideoMetadataV2 } from "../../video/getVideoMetadata"
-import { log } from "../../log"
-import { MediaService } from "../../generated"
-import { FK_API_KEY } from "../../config"
+import type { VideoMetadataV2 } from "../../video/getVideoMetadata.js"
+import { log } from "../../log.js"
+import { MediaService } from "../../generated/index.js"
+import { FK_API_KEY } from "../../config.js"
 
 export async function registerMedia(
   originalLocator: `S3:${string}` | `CLOUDFLARE:${string}`,
