@@ -40,9 +40,9 @@ export const statusUpdate: Middleware = async (ctx, next) => {
     event: "status",
     data: {
       mediaId: job.data.mediaId,
-      isCompleted: job.isCompleted(),
-      isActive: job.isActive(),
-      isFailed: job.isFailed(),
+      isCompleted: await job.isCompleted(),
+      isActive: await job.isActive(),
+      isFailed: await job.isFailed(),
     },
   })
 
