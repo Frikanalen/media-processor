@@ -30,7 +30,7 @@ export const statusUpdate: Middleware = async (ctx, next) => {
 
   const job = await videoQueue.getJob(uploadId)
 
-  if (!job) return ctx.throw(404, "job_not_found")
+  if (!job) return ctx.throw(404, `job ${uploadId} not found`)
 
   // FIXME: No user permission checking!
 
@@ -40,6 +40,9 @@ export const statusUpdate: Middleware = async (ctx, next) => {
     event: "status",
     data: {
       mediaId: job.data.mediaId,
+      isCompleted: job.isCompleted(),
+      isActive: job.isActive(),
+      isFailed: job.isFailed(),
     },
   })
 
