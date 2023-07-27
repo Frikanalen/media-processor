@@ -19,6 +19,7 @@ AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
 AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 
 # s3 emulator and redis instance from docker-compose
-AWS_ENDPOINT_HOST=s3
-AWS_ENDPOINT_PORT=9000
+# Note the values are BUCKET_HOST to match those from rook-ceph.
+BUCKET_HOST=s3
+BUCKET_PORT=9000
 REDIS_URL=redis://redis:6379
