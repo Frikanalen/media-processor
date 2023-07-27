@@ -14,7 +14,7 @@
     "test:watch": "jest --coverage --watchAl l",
     "build": "tsc",
     "build:watch": "onchange 'src/*.ts' 'src/**/*.ts' -- yarn run build",
-    "start": "NODE_ENV=production node ./build/server.js",
+    "start": "NODE_ENV=production node --enable-source-maps ./build/server.js",
     "fetch-api": "curl -O https://beta.frikanalen.no/api/v2/open-api-spec.json",
     "fetch-local": "curl -O http://localhost:8080/open-api-spec.json",
     "generate": "openapi --input ./open-api-spec.json -c axios  --output src/generated && fix-esm-import-path src/generated && prettier -w src/generated >> /dev/null",
